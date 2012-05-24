@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -Wall    -shared -Wl,-soname,libIF_curr_exp.so -o libIF_curr_exp.so CMakeFiles/IF_curr_exp_cuda.dir/./IF_curr_exp_cuda_generated_IF_curr_exp.cu.o -L/home/isk3nd3r/NeMo/project/nemo-mpi/build/src/nemo/cuda /usr/local/cuda/lib64/libcudart.so -lcuda -Wl,-rpath,/home/isk3nd3r/NeMo/project/nemo-mpi/build/src/nemo/cuda:/usr/local/cuda/lib64: 

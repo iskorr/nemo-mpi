@@ -1,0 +1,46 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../src/nemo/RNG.hpp
+vector
+-
+nemo/internal_types.h
+-
+nemo/config.h
+-
+
+../src/nemo/internal_types.h
+stddef.h
+-
+types.h
+../src/nemo/types.h
+
+../src/nemo/types.h
+stdint.h
+-
+
+/home/isk3nd3r/NeMo/project/nemo-mpi/src/nemo/cpu/plugins/Input.cpp
+neuron_model.h
+/home/isk3nd3r/NeMo/project/nemo-mpi/src/nemo/cpu/plugins/neuron_model.h
+default_init.c
+/home/isk3nd3r/NeMo/project/nemo-mpi/src/nemo/cpu/plugins/default_init.c
+
+/home/isk3nd3r/NeMo/project/nemo-mpi/src/nemo/cpu/plugins/default_init.c
+neuron_model.h
+/home/isk3nd3r/NeMo/project/nemo-mpi/src/nemo/cpu/plugins/neuron_model.h
+
+/home/isk3nd3r/NeMo/project/nemo-mpi/src/nemo/cpu/plugins/neuron_model.h
+nemo/config.h
+-
+nemo/internal_types.h
+-
+nemo/RNG.hpp
+-
+
+src/nemo/config.h
+
