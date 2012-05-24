@@ -1,2 +1,10 @@
 # Ignoring the build files
 build/*
+
+# Ignoring report-related generated files
+interim_report.aux
+interim_report.bbl
+interim_report.blg
+interim_report.log
+interim_report.pdf
+interim_report.toc
