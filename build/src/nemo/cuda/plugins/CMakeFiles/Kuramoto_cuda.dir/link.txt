@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -Wall    -shared -Wl,-soname,libKuramoto.so -o libKuramoto.so CMakeFiles/Kuramoto_cuda.dir/./Kuramoto_cuda_generated_Kuramoto.cu.o -L/home/isk3nd3r/NeMo/project/nemo-mpi/build/src/nemo/cuda /usr/local/cuda/lib64/libcudart.so -lcuda -Wl,-rpath,/home/isk3nd3r/NeMo/project/nemo-mpi/build/src/nemo/cuda:/usr/local/cuda/lib64: 

@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -Wall    -shared -Wl,-soname,libInput.so -o libInput.so CMakeFiles/Input_cuda.dir/./Input_cuda_generated_Input.cu.o -L/home/isk3nd3r/NeMo/project/nemo-mpi/build/src/nemo/cuda /usr/local/cuda/lib64/libcudart.so -lcuda -Wl,-rpath,/home/isk3nd3r/NeMo/project/nemo-mpi/build/src/nemo/cuda:/usr/local/cuda/lib64: 
