@@ -8,3 +8,6 @@ interim_report.blg
 interim_report.log
 interim_report.pdf
 interim_report.toc
+
+# Ignoring all the files being modified
+*~
