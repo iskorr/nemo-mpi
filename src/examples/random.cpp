@@ -6,20 +6,18 @@
  */
 
 #include <vector>
-#include <string>
-#include <iostream>
-#include <fstream>
 
-#include <boost/mpi/environment.hpp>
-#include <boost/mpi/communicator.hpp>
-#include <boost/program_options.hpp>
-#include <boost/scoped_ptr.hpp>
+#ifdef USING_MAIN
+#	include <string>
+#	include <iostream>
+#	include <fstream>
+#	include <boost/program_options.hpp>
+#	include <boost/scoped_ptr.hpp>
+#	include <examples/common.hpp>
+#endif
+
 #include <boost/random.hpp>
-
-#include <examples/common.hpp>
 #include <nemo.hpp>
-namespace mpi = boost::mpi;
-using namespace std;
 
 typedef boost::mt19937 rng_t;
 typedef boost::variate_generator<rng_t&, boost::uniform_real<double> > urng_t;
@@ -29,22 +27,41 @@ namespace nemo {
 	namespace random {
 
 void
-addNeuron(nemo::Network* net, unsigned nidx, urng_t& param)
+addExcitatoryNeuron(nemo::Network* net, unsigned nidx, urng_t& param)
 {
 	float v = -65.0f;
 	float a = 0.02f;
 	float b = 0.2f;
 	float r1 = float(param());
 	float r2 = float(param());
-	float c = v + 15.0f*r1*r2;
-	float d = 8.0f - 6.0f*r1*r2;
+	float c = v + 15.0f * r1 * r1;
+	float d = 8.0f - 6.0f * r2 * r2;
 	float u = b * v;
 	float sigma = 5.0f;
 	net->addNeuron(nidx, a, b, c, d, u, v, sigma);
 }
 
+
+
+void
+addInhibitoryNeuron(nemo::Network* net, unsigned nidx, urng_t& param)
+{
+	float v = -65.0f;
+	float r1 = float(param());
+	float a = 0.02f + 0.08f * r1;
+	float r2 = float(param());
+	float b = 0.25f - 0.05f * r2;
+	float c = v;
+	float d = 2.0f;
+	float u = b * v;
+	float sigma = 2.0f;
+	net->addNeuron(nidx, a, b, c, d, u, v, sigma);
+}
+
+
+
 nemo::Network*
-construct(unsigned ncount, unsigned scount, unsigned dmax)
+construct(unsigned ncount, unsigned scount, unsigned dmax, bool stdp)
 {
 	rng_t rng;
 	/* Neuron parameters and weights are partially randomised */
@@ -55,9 +72,16 @@ construct(unsigned ncount, unsigned scount, unsigned dmax)
 	nemo::Network* net = new nemo::Network();
 
 	for(unsigned nidx=0; nidx < ncount; ++nidx) {
-		addNeuron(net, nidx, randomParameter);
-		for(unsigned s = 0; s < scount; ++s) {
-			net->addSynapse(nidx, randomTarget(), randomDelay(), 0.5f * float(randomParameter()), false);
+		if(nidx < (ncount * 4) / 5) { // excitatory
+			addExcitatoryNeuron(net, nidx, randomParameter);
+			for(unsigned s = 0; s < scount; ++s) {
+				net->addSynapse(nidx, randomTarget(), randomDelay(), 0.5f * float(randomParameter()), stdp);
+			}
+		} else { // inhibitory
+			addInhibitoryNeuron(net, nidx, randomParameter);
+			for(unsigned s = 0; s < scount; ++s) {
+				net->addSynapse(nidx, randomTarget(), 1U, float(-randomParameter()), 0);
+			}
 		}
 	}
 	return net;
@@ -76,67 +100,60 @@ construct(unsigned ncount, unsigned scount, unsigned dmax)
 int
 main(int argc, char* argv[])
 {
+	namespace po = boost::program_options;
 
-	mpi::environment = env(argc, argv);
-	mpi::communicator world;
-	unsigned rank = world.rank();
-	unsigned neuronCount,synapsesPerNeuron;
+	try {
 
-	if (rank == 0) {
+		po::options_description desc = commonOptions();
+		desc.add_options()
+			("neurons,n", po::value<unsigned>()->default_value(1000), "number of neurons")
+			("synapses,m", po::value<unsigned>()->default_value(1000), "number of synapses per neuron")
+			("dmax,d", po::value<unsigned>()->default_value(1), "maximum excitatory delay,  where delays are uniform in range [1, dmax]")
+		;
 
-		unsigned workers  = world.size();
-		unsigned worker = 1;
-		neuronCount=1000;
-		synapsesPerNeuron=200;
+		po::variables_map vm = processOptions(argc, argv, desc);
 
-		for (; worker < workers; ++worker) {
-			world.send(worker, 0, neuronCount);
-			world.send(worker, 1, synapsesPerNeuron);
+		unsigned ncount = vm["neurons"].as<unsigned>();
+		unsigned scount = vm["synapses"].as<unsigned>();
+		unsigned dmax = vm["dmax"].as<unsigned>();
+		unsigned duration = vm["duration"].as<unsigned>();
+		unsigned stdp = vm["stdp-period"].as<unsigned>();
+		unsigned verbose = vm["verbose"].as<unsigned>();
+		bool runBenchmark = vm.count("benchmark") != 0;
+
+		std::ofstream file;
+		std::string filename;
+
+		if(vm.count("output-file")) {
+			filename = vm["output-file"].as<std::string>();
+			file.open(filename.c_str()); // closes on destructor
 		}
-		cout << "All workers are set up, running simulations" << endl;
-	
-		unsigned simRun;
-		worker = 1;
 
-		for (; worker < workers; ++worker) {
-			world.recv(worker, 2, simRun);
-			if (simRun == 0) break;
+		std::ostream& out = filename.empty() ? std::cout : file;
+
+		LOG(verbose, "Constructing network");
+		boost::scoped_ptr<nemo::Network> net(nemo::random::construct(ncount, scount, dmax, stdp != 0));
+		LOG(verbose, "Creating configuration");
+		nemo::Configuration conf = configuration(vm);
+		LOG(verbose, "Simulation will run on %s", conf.backendDescription());
+		LOG(verbose, "Creating simulation");
+		boost::scoped_ptr<nemo::Simulation> sim(nemo::simulation(*net, conf));
+		LOG(verbose, "Running simulation");
+		if(runBenchmark) {
+			benchmark(sim.get(), ncount, scount, vm);
+		} else {
+			simulate(sim.get(), duration, stdp, out);
 		}
-
-		if (worker == workers-1) cout << "Simulations were run successfully!" << endl;
-		else cout << "There is a problem with a worker " << worker << endl;
-
-	} else if (rank > 0) {
-
-		world.recv(0, 0, neuronCount);
-		world.recv(0, 1, synapsesPerNeuron);
-		namespace po = boost::program_options;
-
-		try {
-			po::options_description desc = commonOptions();
-			desc.add_options()
-				("neurons,n", po::value<unsigned>()->default_value(neuronCount), "number of neurons")
-				("synapses,m", po::value<unsigned>()->default_value(synapsesPerNeuron), "number of synapses per neuron")
-			;
-	
-			po::variables_map vm = processOptions(argc, argv, desc);
-	
-			unsigned ncount = vm["neurons"].as<unsigned>();
-			unsigned scount = vm["synapses"].as<unsigned>();
-			unsigned duration = vm["duration"].as<unsigned>();
-	
-			boost::scoped_ptr<nemo::Network> net(nemo::random::construct(ncount, scount,5));
-			nemo::Configuration conf = configuration(vm);
-			boost::scoped_ptr<nemo::Simulation> sim(nemo::simulation(*net, conf));
-			simulate(sim.get(), duration, 0, cout);
-			world.send(0, 2, 1);
-			return 0;
-		} catch(...) {
-			cerr << "random: An unknown error occurred\n";
-			world.send(0, 2, 0);
-			return -1;
-		}
+		LOG(verbose, "Simulation complete");
+		return 0;
+	} catch(std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		return -1;
+	} catch(...) {
+		std::cerr << "random: An unknown error occurred\n";
+		return -1;
 	}
+
 }
 
 #endif

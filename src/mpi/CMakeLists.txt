@@ -35,7 +35,8 @@ TARGET_LINK_LIBRARIES(nemo_mpi nemo ${MPI_LIBRARIES})
 SET(EXAMPLES_DIR ${CMAKE_SOURCE_DIR}/examples)
 ADD_EXECUTABLE(mpi_example
 	example.cpp
-	${EXAMPLES_DIR}/random.cpp
+#	${EXAMPLES_DIR}/random.cpp
+	${CMAKE_SOURCE_DIR}/src/examples/random.cpp
 )
 
 # TODO: extract only mpi and serialisation here.
