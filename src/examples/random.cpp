@@ -99,6 +99,8 @@ main(int argc, char* argv[])
 		unsigned lastNeuronCount = neuronCountPerNetwork + neuronOffset;
 		unsigned synapsesPerNeuron = neuronCountPerNetwork / 2;
 
+		cout << "Blocking Random Simulation initiated" << endl;
+
 		for (; worker < workers-1; ++worker) {
 			MPI::COMM_WORLD.Send(&neuronCountPerNetwork, 1, MPI::INT, worker, (int) 0);
 			MPI::COMM_WORLD.Send(&synapsesPerNeuron, 1, MPI::INT, worker, (int) 1);
@@ -140,16 +142,14 @@ main(int argc, char* argv[])
 
 			unsigned dmax = vm["dmax"].as<unsigned>();
 			unsigned duration = vm["duration"].as<unsigned>();
-			unsigned verbose = 1;
 			
-			LOG(verbose, "Constructing network");
+			cout << "Constructing network " << rank << endl;
 			boost::scoped_ptr<nemo::Network> net(nemo::random::construct(neuronCount, synapsesPerNeuron, dmax));
-			LOG(verbose, "Creating configuration");
+			cout << "Creating configuration " << rank << endl;
 			nemo::Configuration conf = configuration(vm);
-			LOG(verbose, "Simulation will run on %s", conf.backendDescription());
-			LOG(verbose, "Creating simulation");
+			cout << "Creating simulation " << rank << endl;
 			boost::scoped_ptr<nemo::Simulation> sim(nemo::simulation(*net, conf));
-			LOG(verbose, "Running simulation");
+			cout << "Running simulation" << rank << endl;
 			simulate(sim.get(), duration, 0, out);
 			reply = 1;
 			MPI::COMM_WORLD.Send(&reply, 1, MPI::INT, 0, (int) 2);
