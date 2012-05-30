@@ -11,3 +11,6 @@ interim_report.toc
 
 # Ignoring all the files being modified
 *~
+
+# Ignoring CMake cache file
+CMakeCache.txt
