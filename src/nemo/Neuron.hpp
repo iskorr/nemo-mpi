@@ -60,6 +60,7 @@ class NEMO_BASE_DLL_PUBLIC Neuron
 
 		template<class Archive>
 		void serialize(Archive & ar, const unsigned int version) {
+			float* a,b,c,d,u,v,sigma;
 			ar & a;
 			ar & b;
 			ar & c;

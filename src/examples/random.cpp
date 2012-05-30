@@ -10,20 +10,26 @@
 #include <iostream>
 #include <fstream>
 
-#include <boost/mpi/environment.hpp>
-#include <boost/mpi/communicator.hpp>
+#include <mpi.h>
 #include <boost/program_options.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/random.hpp>
 
 #include <examples/common.hpp>
 #include <nemo.hpp>
-namespace mpi = boost::mpi;
+
 using namespace std;
 
 typedef boost::mt19937 rng_t;
 typedef boost::variate_generator<rng_t&, boost::uniform_real<double> > urng_t;
 typedef boost::variate_generator<rng_t&, boost::uniform_int<> > uirng_t;
+
+struct null_streambuf: public std::streambuf
+{
+	void overflow(char c)
+	{
+	}
+};
 
 namespace nemo {
 	namespace random {
@@ -69,74 +75,92 @@ construct(unsigned ncount, unsigned scount, unsigned dmax)
 
 #ifdef USING_MAIN
 
-
 #define LOG(cond, ...) if(cond) { fprintf(stdout, __VA_ARGS__); fprintf(stdout, "\n"); }
-
 
 int
 main(int argc, char* argv[])
 {
-
-	mpi::environment = env(argc, argv);
-	mpi::communicator world;
-	unsigned rank = world.rank();
+	MPI::Init ( argc, argv );
+	MPI::Status status;
+	unsigned workers = MPI::COMM_WORLD.Get_size();
+	unsigned rank = MPI::COMM_WORLD.Get_rank();
 	unsigned neuronCount,synapsesPerNeuron;
+
+	null_streambuf nullbuf;
+	std::ostream out(&nullbuf);
 
 	if (rank == 0) {
 
-		unsigned workers  = world.size();
+		neuronCount = 100;
+		unsigned simRun;
 		unsigned worker = 1;
-		neuronCount=1000;
-		synapsesPerNeuron=200;
+		unsigned neuronOffset = neuronCount % (workers-1);
+		unsigned neuronCountPerNetwork = neuronCount / (workers-1);
+		unsigned lastNeuronCount = neuronCountPerNetwork + neuronOffset;
+		unsigned synapsesPerNeuron = neuronCountPerNetwork / 2;
 
-		for (; worker < workers; ++worker) {
-			world.send(worker, 0, neuronCount);
-			world.send(worker, 1, synapsesPerNeuron);
+		for (; worker < workers-1; ++worker) {
+			MPI::COMM_WORLD.Send(&neuronCountPerNetwork, 1, MPI::INT, worker, (int) 0);
+			MPI::COMM_WORLD.Send(&synapsesPerNeuron, 1, MPI::INT, worker, (int) 1);
+		}
+		if (workers > 1) {
+			MPI::COMM_WORLD.Send(&lastNeuronCount, 1, MPI::INT, workers-1, (int) 0);
+			MPI::COMM_WORLD.Send(&synapsesPerNeuron, 1, MPI::INT, workers-1, (int) 1);		
 		}
 		cout << "All workers are set up, running simulations" << endl;
-	
-		unsigned simRun;
-		worker = 1;
 
+
+		worker = 1;
 		for (; worker < workers; ++worker) {
-			world.recv(worker, 2, simRun);
+			MPI::COMM_WORLD.Recv(&simRun, 1, MPI::INT, worker, (int) 2, status);
 			if (simRun == 0) break;
 		}
 
-		if (worker == workers-1) cout << "Simulations were run successfully!" << endl;
+		if (worker >= workers-1) cout << "Simulations were run successfully!" << endl;
 		else cout << "There is a problem with a worker " << worker << endl;
 
 	} else if (rank > 0) {
 
-		world.recv(0, 0, neuronCount);
-		world.recv(0, 1, synapsesPerNeuron);
+		MPI::COMM_WORLD.Recv(&neuronCount, 1, MPI::INT, 0, (int) 0, status);
+		MPI::COMM_WORLD.Recv(&synapsesPerNeuron, 1, MPI::INT, 0, (int) 1, status);
+		cout << "Neurons on the machine " << rank << " are " << neuronCount << endl;
+		cout << "Synapses on the machine " << rank << " are " << synapsesPerNeuron << endl;
 		namespace po = boost::program_options;
+		int reply;
 
 		try {
 			po::options_description desc = commonOptions();
 			desc.add_options()
 				("neurons,n", po::value<unsigned>()->default_value(neuronCount), "number of neurons")
 				("synapses,m", po::value<unsigned>()->default_value(synapsesPerNeuron), "number of synapses per neuron")
+				("dmax,d", po::value<unsigned>()->default_value(1), "maximum excitatory delay,  where delays are uniform in range [1, dmax]")
 			;
 	
 			po::variables_map vm = processOptions(argc, argv, desc);
-	
-			unsigned ncount = vm["neurons"].as<unsigned>();
-			unsigned scount = vm["synapses"].as<unsigned>();
+
+			unsigned dmax = vm["dmax"].as<unsigned>();
 			unsigned duration = vm["duration"].as<unsigned>();
-	
-			boost::scoped_ptr<nemo::Network> net(nemo::random::construct(ncount, scount,5));
+			unsigned verbose = 1;
+			
+			LOG(verbose, "Constructing network");
+			boost::scoped_ptr<nemo::Network> net(nemo::random::construct(neuronCount, synapsesPerNeuron, dmax));
+			LOG(verbose, "Creating configuration");
 			nemo::Configuration conf = configuration(vm);
+			LOG(verbose, "Simulation will run on %s", conf.backendDescription());
+			LOG(verbose, "Creating simulation");
 			boost::scoped_ptr<nemo::Simulation> sim(nemo::simulation(*net, conf));
-			simulate(sim.get(), duration, 0, cout);
-			world.send(0, 2, 1);
-			return 0;
+			LOG(verbose, "Running simulation");
+			simulate(sim.get(), duration, 0, out);
+			reply = 1;
+			MPI::COMM_WORLD.Send(&reply, 1, MPI::INT, 0, (int) 2);
 		} catch(...) {
 			cerr << "random: An unknown error occurred\n";
-			world.send(0, 2, 0);
-			return -1;
+			reply = 0;
+			MPI::COMM_WORLD.Send(&reply, 1, MPI::INT, 0, (int) 2);
 		}
 	}
+	MPI::Finalize();
+	return 0;
 }
 
 #endif
