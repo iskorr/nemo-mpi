@@ -99,6 +99,10 @@ main(int argc, char* argv[])
 		unsigned lastNeuronCount = neuronCountPerNetwork + neuronOffset;
 		unsigned synapsesPerNeuron = neuronCountPerNetwork / 2;
 
+		cout << "Blocking Random Simulation initiated" << endl;
+		cout << "Set number of neurons: ";
+		cin << neuronCount;
+
 		for (; worker < workers-1; ++worker) {
 			MPI::COMM_WORLD.Send(&neuronCountPerNetwork, 1, MPI::INT, worker, (int) 0);
 			MPI::COMM_WORLD.Send(&synapsesPerNeuron, 1, MPI::INT, worker, (int) 1);
@@ -125,31 +129,21 @@ main(int argc, char* argv[])
 		MPI::COMM_WORLD.Recv(&synapsesPerNeuron, 1, MPI::INT, 0, (int) 1, status);
 		cout << "Neurons on the machine " << rank << " are " << neuronCount << endl;
 		cout << "Synapses on the machine " << rank << " are " << synapsesPerNeuron << endl;
-		namespace po = boost::program_options;
 		int reply;
 
 		try {
-			po::options_description desc = commonOptions();
-			desc.add_options()
-				("neurons,n", po::value<unsigned>()->default_value(neuronCount), "number of neurons")
-				("synapses,m", po::value<unsigned>()->default_value(synapsesPerNeuron), "number of synapses per neuron")
-				("dmax,d", po::value<unsigned>()->default_value(1), "maximum excitatory delay,  where delays are uniform in range [1, dmax]")
-			;
-	
-			po::variables_map vm = processOptions(argc, argv, desc);
-
-			unsigned dmax = vm["dmax"].as<unsigned>();
-			unsigned duration = vm["duration"].as<unsigned>();
-			unsigned verbose = 1;
+			unsigned duration = 500;
+			nemo::Configuration conf;
+			conf.setWriteOnlySynapses();
+			conf.enableLogging();
+			conf.setCpuBackend();
 			
-			LOG(verbose, "Constructing network");
-			boost::scoped_ptr<nemo::Network> net(nemo::random::construct(neuronCount, synapsesPerNeuron, dmax));
-			LOG(verbose, "Creating configuration");
-			nemo::Configuration conf = configuration(vm);
-			LOG(verbose, "Simulation will run on %s", conf.backendDescription());
-			LOG(verbose, "Creating simulation");
+			cout << "Constructing network " << rank << endl;
+			boost::scoped_ptr<nemo::Network> net(nemo::random::construct(neuronCount, synapsesPerNeuron, 1));
+			cout << "Creating configuration " << rank << endl;
+			cout << "Creating simulation " << rank << endl;
 			boost::scoped_ptr<nemo::Simulation> sim(nemo::simulation(*net, conf));
-			LOG(verbose, "Running simulation");
+			cout << "Running simulation" << rank << endl;
 			simulate(sim.get(), duration, 0, out);
 			reply = 1;
 			MPI::COMM_WORLD.Send(&reply, 1, MPI::INT, 0, (int) 2);
