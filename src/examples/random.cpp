@@ -91,7 +91,7 @@ main(int argc, char* argv[])
 
 	if (rank == 0) {
 
-		neuronCount = 100;
+		neuronCount = 200;
 		unsigned simRun;
 		unsigned worker = 1;
 		unsigned neuronOffset = neuronCount % (workers-1);
@@ -100,8 +100,6 @@ main(int argc, char* argv[])
 		unsigned synapsesPerNeuron = neuronCountPerNetwork / 2;
 
 		cout << "Blocking Random Simulation initiated" << endl;
-		cout << "Set number of neurons: ";
-		cin << neuronCount;
 
 		for (; worker < workers-1; ++worker) {
 			MPI::COMM_WORLD.Send(&neuronCountPerNetwork, 1, MPI::INT, worker, (int) 0);
