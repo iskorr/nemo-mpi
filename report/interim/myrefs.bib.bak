@@ -1,0 +1,358 @@
+% This file was created with JabRef 2.6.
+% Encoding: UTF-8
+
+@ARTICLE{AndreasK.Fidjeland2009,
+  author = {Andreas K. Fidjeland, Etienne B. Roesch, Murray P. Shanahan and Wayne
+	Luk},
+  title = {NeMo: A Platform for Neural Modelling of Spiking Neurons Using GPUs},
+  journal = {Proc. 20th IEEE International Conference on Application-specific
+	Systems, Architectures and Processors},
+  year = {2009},
+  volume = {Vol. 1},
+  pages = {137 - 144},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@ARTICLE{ArnaudDelorme1999,
+  author = {Arnaud Delorme, Jacques Gautrais, Rufin van Rullen and Simon Thorpe},
+  title = {SpikeNET: A simulator for modeling large networks of integrate and
+	fire neurons},
+  journal = {Neurocomputing},
+  year = {1999},
+  volume = {Vol. 26–27},
+  pages = {989–996},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@BOOK{Bar-Yam2003,
+  title = {Dynamics of Complex Systems},
+  publisher = {Addison Weasley},
+  year = {2003},
+  author = {Yaneer Bar-Yam},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{BingHan2010,
+  author = {Bing Han, Tarek M. Taha},
+  title = {Acceleration of spiking neural network based pattern recognition
+	on NVIDIA graphics processors},
+  journal = {Applied Optics},
+  year = {2010},
+  volume = {Vol. 49},
+  pages = {B83-B91},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@ARTICLE{,
+  author = {Dharmendra S. Modha, Rajagopal Ananthanarayanan},
+  title = {Anatomy of a cortical simulator},
+  journal = {SC '07 Proceedings of the 2007 ACM/IEEE conference on Supercomputing},
+  year = {2007},
+  volume = {Vol. 1},
+  pages = {1-12},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{EugeneM.Izhikevich2008,
+  author = {Eugene M. Izhikevich, Gerald M. Edelman},
+  title = {Large-scale model of mammalian thalamocortical systems},
+  journal = {PNAS},
+  year = {2008},
+  volume = {Vol. 105},
+  pages = {3593-3598},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@BOOK{G.S.Almasi1989,
+  title = {Highly Parallel Computing},
+  publisher = {Benjamin-Cummings Publishing Co., Inc.},
+  year = {1989},
+  author = {G.S. Almasi, A. Gottlieb},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@ARTICLE{Goodman2008,
+  author = {D. F. Goodman and R. Brette . Front. Neuroinform.},
+  title = {Brian: a simulator for spiking neural networks in Python},
+  journal = {Frontiers in Neuroinformatics},
+  year = {2008},
+  volume = {Vol. 2 Art. 5},
+  pages = {1-10},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@ARTICLE{Harmon1959,
+  author = {L. D. Harmon},
+  title = {Artificial Neuron},
+  journal = {Science},
+  year = {1959},
+  volume = {Vol. 129},
+  pages = {962-963},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@BOOK{ActFunc,
+  title = {Neural Networks: A Comprehensive Foundation},
+  publisher = {Prentice Hall},
+  year = {1998},
+  author = {Simon Haykin},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{HidekiTanaka2009,
+  author = {Hideki Tanaka, Takashi Morie and Kazuyuki Aihara},
+  title = {A CMOS Spiking Neural Network Circuit with Symmetric/Asymmetric STDP
+	function},
+  journal = {IEICE Transactions on  Fundamentals},
+  year = {2009},
+  volume = {Vol E92-A},
+  pages = {1691-98},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{HojjatAdeli2009,
+  author = {Hojjat Adeli, Samanwoy Ghosh-Dastidar},
+  title = {Spiking Neural Networks},
+  journal = {International Journal of Neural Systems (IJNS)},
+  year = {2009},
+  volume = {Vol. 19},
+  pages = {295-308},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@ELECTRONIC{IFModel,
+  author = {http://www.scholarpedia.org/article/Adaptive\_exponential\_integrate-and-fire\_model},
+  organization = {Scholarpedia},
+  url = {http://www.scholarpedia.org/article/Adaptive\_exponential\_integrate-and-fire\_model},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{Izhikevich2004,
+  author = {Eugene M. Izhikevich},
+  title = {Which model to use for cortical spiking neurons?},
+  journal = {IEEE Transactions on Neural Networks},
+  year = {2004},
+  volume = {Vol. 15},
+  pages = {1063 - 1070},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{Izhikevich2003,
+  author = {Eugene M. Izhikevich},
+  title = {Simple Model of Spiking Neurons},
+  journal = {IEEE Transactions on Neural Networks},
+  year = {2003},
+  volume = {Vol. 14},
+  pages = {1569- 1572},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@MASTERSTHESIS{Jalasutram2009,
+  author = {Rommel Jalasutram},
+  title = {Acceleration of Spiking Neural Networks on Multicore Architectures},
+  school = {Clemson University},
+  year = {2009},
+  owner = {io1009},
+  timestamp = {2012.01.25}
+}
+
+@BOOK{Kumar2002,
+  title = {Introduction to Parallel Computing},
+  publisher = {Addison-Wesley Longman Publishing Co., Inc.},
+  year = {2002},
+  author = {Vipin Kumar},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{Maass2003,
+  author = {Wolfgang Maass},
+  title = {Computation with spiking neurons},
+  journal = {The handbook of brain theory and neural networks},
+  year = {2003},
+  volume = {Vol. 1},
+  pages = {1-14},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@ARTICLE{Maass1997,
+  author = {Wolfgang Maass},
+  title = {Networks of Spiking Neurons: The Third Generation of Neural Network
+	Models},
+  journal = {Neural Networks},
+  year = {1997},
+  volume = {Vol. 10},
+  pages = {1659-1671},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@ARTICLE{BlueBrain,
+  author = {Henry Markram},
+  title = {The Blue Brain Project},
+  journal = {Nature Reviews Neuroscience},
+  year = {2006},
+  volume = {Vol. 7},
+  pages = {153-160},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{Mehrtash2003,
+  author = {Mehrtash, N., Jung, D., Hellmich, H.H., Schoenauer, T., Lu, V.T.,
+	Klar, H.},
+  title = {Synaptic plasticity in spiking neural networks (SP2INN): a system
+	approach},
+  journal = {IEEE Transactions on Neural Networks},
+  year = {2003},
+  volume = {Vol. 14},
+  pages = {980-992},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ELECTRONIC{Philosophy,
+  author = {Online Stanford Encyclopedia of Philosophy},
+  organization = {Stanford University},
+  url = {http://kryten.mm.rpi.edu/SEP/neuron-unit.jpg},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{RichardL.Graham2005,
+  author = {Richard L. Graham, Timothy S. Woodall and Jeffrey M. Squyres},
+  title = {Open MPI: A Flexible High Performance MPI},
+  journal = {6th International Conference on Parallel Processing and Applied Mathematics},
+  year = {2005},
+  volume = {Vol 1.},
+  pages = {1-12},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{RichardNeill2010,
+  author = {Richard Neill, Alexander Shabarshin, Luca P. Carloni},
+  title = {A Heterogeneous Parallel System Running Open MPI on a Broadband Network
+	of Embedded Set-Top Devices},
+  journal = {Proceedings of the 7th ACM international conference on Computing
+	frontiers},
+  year = {2010},
+  volume = {Vol. 1},
+  pages = {187-196},
+  owner = {io1009},
+  timestamp = {2012.01.25}
+}
+
+@ARTICLE{SenSong2000,
+  author = {Sen Song, Kenneth D. Miller and L. F. Abbott},
+  title = {Competitive Hebbian Learning Through Spike-Timing-Dependent Synaptic
+	Plasticity},
+  journal = {Nature Neuroscience},
+  year = {2000},
+  volume = {Vol. 1},
+  pages = {1-36},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{TarekM.Taha2010,
+  author = {Tarek M. Taha, Bing Han},
+  title = {Neuromorphic models on a GPGPU cluster},
+  journal = {Neural Networks (IJCNN), The 2010 International Joint Conference},
+  year = {2010},
+  volume = {Vol. 1},
+  pages = {1-8},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@ARTICLE{VolodymyrTurchenko2010a,
+  author = {Volodymyr Turchenko, Lucio Grandinetti},
+  title = {Parallel Batch Pattern BP Training Algorithm of Recurrent Neural
+	Network},
+  journal = {14th International Conference on Intelligent Engineering Systems},
+  year = {2010},
+  volume = {Vol. 1},
+  pages = {25 - 30},
+  owner = {io1009},
+  timestamp = {2012.01.25}
+}
+
+@ARTICLE{VolodymyrTurchenko2010,
+  author = {Volodymyr Turchenko, Lucio Grandinettia, George Bosilcab, Jack J.
+	Dongarrab},
+  title = {Improvement of parallelization efficiency of batch pattern BP training
+	algorithm using Open MPI},
+  journal = {Procedia Computer Science},
+  year = {2010},
+  volume = {Vol. 1},
+  pages = {525–533},
+  owner = {io1009},
+  timestamp = {2012.01.25}
+}
+
+@BOOK{W.Gropp1999,
+  title = {Using MPI: Portable Parallel Programming with the Message-Passing
+	Interface},
+  publisher = {MIT Press},
+  year = {1999},
+  author = {W. Gropp, E. Lusk and A. Skjellum},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@BOOK{W.Gropp1999a,
+  title = {Using MPI-2: Advanced Features of the Message-Passing Interface},
+  publisher = {MIT Press},
+  year = {1999},
+  author = {W. Gropp, E. Lusk and R. Thakur},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{mpi,
+  author = {William Gropp, Ewing Lusk, Nathan Doss and Anthony Skjellum},
+  title = {A high-performance, portable implementation of the MPI message passing
+	interface standard},
+  journal = {Parallel Computing},
+  year = {1996},
+  volume = {Volume 22},
+  pages = {789–828},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@PHDTHESIS{Wills2004,
+  author = {Sebastian A. Wills},
+  title = {Computation with Spiking Neurons},
+  school = {Clare College, University of Cambridge},
+  year = {2004},
+  owner = {io1009},
+  timestamp = {2012.02.09}
+}
+
+@BOOK{WulframGerstner2002,
+  title = {Spiking Neuron Models - Single Neurons, Populations, Platsticity},
+  publisher = {Cambridge University Press},
+  year = {2002},
+  author = {Wulfram Gerstner, Werner Kistler},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+

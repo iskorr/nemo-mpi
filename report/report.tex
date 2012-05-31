@@ -1,0 +1,58 @@
+\documentclass[12pt]{report}
+  \title{\LARGE Implementation of distributed spiking neural networks with the use of message passing interface and NeMo simulator \\ \vspace{7mm} \large Final Year Project}
+  \author{ \emph{Author:} \\ Iskander Orazbekov \vspace{56 mm} \\ Imperial College London}
+  \date{\today}
+\usepackage{a4}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage[english]{babel}
+\usepackage{wrapfig}
+\setlength{\parskip}{0.3cm}
+\setlength{\parindent}{0cm}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+Motivation behind the development of spiking neural networks arised from the growing interest in the area of neural 
+computation and studies of brain activity in the recent years. The reason lies in the fact that SNNs incorporate time
+into neuron firing computation and signify the role of interconnectedness between neurons, therefore bringing the simulation 
+level closer to reality.
+
+However, as a result of such improvement, spiking neural networks are computationally expensive to simulate, therefore, a solution 
+using parallel computation was needed. NeMo, a Spiking Neural Network simulator developed at Imperial College, solves this problem 
+by making use of CUDA-interfaced GPUs with high level of parallelism.
+
+The aim of this project is to implement the Message Passing Interface for NeMo, and by doing this, improve inter-neural communication, 
+to allow for better performance of parallel computations. This, in turn, will allow for bigger number of neurons within the network 
+and greater level of realism brought by the simulation.
+
+\end{abstract}
+
+\tableofcontents
+
+\renewcommand{\chaptername}{}
+
+\input{1_introduction}
+
+\input{2_background}
+
+\input{3_objectives}
+
+\input{4_design}
+
+\input{5_improvements}
+
+\input{6_evaluation}
+
+\input{7_conclusion}
+
+\clearpage
+
+\bibliographystyle{plain}
+\bibliography{myrefs}
+
+\end{document}

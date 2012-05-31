@@ -1,0 +1,21 @@
+\chapter{Introduction}
+
+Studies in the area of neuroscience have always pushed boundaries of the development of simulation tools, requiring more computational power 
+for realistical models. In order to achieve a high level of realism, large-scale networks are needed, that consist of more than \begin{math}10^8\end{math} neurons 
+and \begin{math}10^{12}\end{math} synapses - and manipulating that data alone comprises a challenging task.
+
+Consequently, parallel computations are used, in order to minimize the workload given to a particular machine and to ensure that throughout
+this execution all of the clusters are communicating between each other. Once implemented, this system will allow a great amount of scalability
+to be put to use, enhancing the quality of simulations.
+
+Therefore, \emph{Message Passing Interface} (MPI) improvement in the current NeMo system will allow for faster rate of computations by making use 
+of parallelism. With the use of MPI, it will be possible to make full use of cluster-based implementation that will deal with the scalability by 
+distributing the workload across several machines. This means that a simulation would be able to host more neurons, therefore creating a more 
+realistical model of brain activity and making it more useful for the research purposes.
+
+However, bigger number of neurons results in need for more efficient memory management, as more data would have to be stored for effective 
+communication. At the same time, a mapping specific to the topology and interconnectedness of a particular network should be derived to increase
+the efficiency of transmissions.
+
+All in all, the successful implementation of the MPI communications protocol will achieve not only a greater scope of usage of NeMo simulator within
+neural computing research, but also provide a good basis for future implementations and enhancements of the simulator.
