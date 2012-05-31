@@ -100,6 +100,8 @@ main(int argc, char* argv[])
 		unsigned synapsesPerNeuron = neuronCountPerNetwork / 2;
 
 		cout << "Blocking Random Simulation initiated" << endl;
+		cout << "Set number of neurons: ";
+		cin << neuronCount;
 
 		for (; worker < workers-1; ++worker) {
 			MPI::COMM_WORLD.Send(&neuronCountPerNetwork, 1, MPI::INT, worker, (int) 0);
@@ -127,26 +129,18 @@ main(int argc, char* argv[])
 		MPI::COMM_WORLD.Recv(&synapsesPerNeuron, 1, MPI::INT, 0, (int) 1, status);
 		cout << "Neurons on the machine " << rank << " are " << neuronCount << endl;
 		cout << "Synapses on the machine " << rank << " are " << synapsesPerNeuron << endl;
-		namespace po = boost::program_options;
 		int reply;
 
 		try {
-			po::options_description desc = commonOptions();
-			desc.add_options()
-				("neurons,n", po::value<unsigned>()->default_value(neuronCount), "number of neurons")
-				("synapses,m", po::value<unsigned>()->default_value(synapsesPerNeuron), "number of synapses per neuron")
-				("dmax,d", po::value<unsigned>()->default_value(1), "maximum excitatory delay,  where delays are uniform in range [1, dmax]")
-			;
-	
-			po::variables_map vm = processOptions(argc, argv, desc);
-
-			unsigned dmax = vm["dmax"].as<unsigned>();
-			unsigned duration = vm["duration"].as<unsigned>();
+			unsigned duration = 500;
+			nemo::Configuration conf;
+			conf.setWriteOnlySynapses();
+			conf.enableLogging();
+			conf.setCpuBackend();
 			
 			cout << "Constructing network " << rank << endl;
-			boost::scoped_ptr<nemo::Network> net(nemo::random::construct(neuronCount, synapsesPerNeuron, dmax));
+			boost::scoped_ptr<nemo::Network> net(nemo::random::construct(neuronCount, synapsesPerNeuron, 1));
 			cout << "Creating configuration " << rank << endl;
-			nemo::Configuration conf = configuration(vm);
 			cout << "Creating simulation " << rank << endl;
 			boost::scoped_ptr<nemo::Simulation> sim(nemo::simulation(*net, conf));
 			cout << "Running simulation" << rank << endl;
