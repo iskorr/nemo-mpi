@@ -3,7 +3,6 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,7 +12,7 @@
 
 #include <examples/common.hpp>
 #include <nemo.hpp>
-#include "neuron_data.hpp"
+#include "parsing.hpp"
 
 using namespace std;
 
@@ -33,35 +32,15 @@ createNeuron(unsigned nidx, urng_t& param)
 	float d = 8.0f - 6.0f*r1*r2;
 	float u = b * v;
 	float sigma = 5.0f;
-	std::ostringstream input;
-	input << a << "," << b << "," << c << "," << d << "," << u << "," << v << "," << sigma << "," << nidx;
-	string neuronData(input.str());
+	string neuronData = encodeNeuron(a,b,c,d,u,v,sigma,nidx);
 	return neuronData;
 }
 
 void
 parseNeuron(nemo::Network* net, string neuronData)
 {
-	vector<string> properties;
-  	size_t p0 = 0, p1 = string::npos;
-	while(p0 != string::npos) {
-		p1 = neuronData.find_first_of(",", p0);
-		if(p1 > p0)
-    		{
-      			string prop = neuronData.substr(p0, p1 - p0);
-      			properties.push_back(prop);
-    		}
-    		p0 = neuronData.find_first_not_of(",", p1);
- 	}
-	float a = ::atof(properties[0].c_str());
-	float b = ::atof(properties[1].c_str());
-	float c = ::atof(properties[2].c_str());
-	float d = ::atof(properties[3].c_str());
-	float u = ::atof(properties[4].c_str());
-	float v = ::atof(properties[5].c_str());
-	float sigma = ::atof(properties[6].c_str());
-	float nidx = ::atof(properties[7].c_str());
-	net->addNeuron(nidx, a, b, c, d, u, v, sigma);
+	float* res = decodeNeuron(neuronData);
+	net->addNeuron((unsigned)res[7], res[0], res[1], res[2], res[3], res[4], res[5], res[6]);
 }
 
 void
@@ -155,9 +134,9 @@ int
 main(int argc, char* argv[])
 {
 	unsigned ncount, duration;
-	if (argc == 0) ncount = 100;
+	if (argc <= 1) ncount = 100;
 	else ncount = atoi(argv[1]);
-	if (argc < 2) duration = 500;
+	if (argc <= 2) duration = 500;
 	else duration = atoi(argv[2]);
 	cout << ncount << " " << duration << endl;
 	MPI::Init ( argc, argv );
