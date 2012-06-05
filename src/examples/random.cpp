@@ -4,184 +4,156 @@
  * Author: Andreas K. Fidjeland <andreas.fidjeland@imperial.ac.uk>
  * Date: April 2010
  */
-#define MASTER 0
+
 #include <vector>
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <stdio.h>
-#include <stdlib.h>
 
-#include <mpi.h>
-#include <boost/scoped_ptr.hpp>
+#ifdef USING_MAIN
+#	include <string>
+#	include <iostream>
+#	include <fstream>
+#	include <boost/program_options.hpp>
+#	include <boost/scoped_ptr.hpp>
+#	include <examples/common.hpp>
+#endif
+
 #include <boost/random.hpp>
-
-#include <examples/common.hpp>
 #include <nemo.hpp>
-#include "neuron_data.hpp"
-
-using namespace std;
 
 typedef boost::mt19937 rng_t;
 typedef boost::variate_generator<rng_t&, boost::uniform_real<double> > urng_t;
 typedef boost::variate_generator<rng_t&, boost::uniform_int<> > uirng_t;
 
+namespace nemo {
+	namespace random {
 
-/* Null output for testing purposes */
-/*struct null_streambuf: public std::streambuf
-{
-	void overflow(char c)
-	{
-	}
-};
-	null_streambuf nullbuf;
-	ostream out(&nullbuf);
-*/
-
-
-string
-createNeuron(unsigned nidx, urng_t& param)
+void
+addExcitatoryNeuron(nemo::Network* net, unsigned nidx, urng_t& param)
 {
 	float v = -65.0f;
 	float a = 0.02f;
 	float b = 0.2f;
 	float r1 = float(param());
 	float r2 = float(param());
-	float c = v + 15.0f*r1*r2;
-	float d = 8.0f - 6.0f*r1*r2;
+	float c = v + 15.0f * r1 * r1;
+	float d = 8.0f - 6.0f * r2 * r2;
 	float u = b * v;
 	float sigma = 5.0f;
-	std::ostringstream input;
-	input << a << "," << b << "," << c << "," << d << "," << u << "," << v << "," << sigma << "," << nidx;
-	string neuronData(input.str());
-	return neuronData;
-}
-
-void
-parseNeuron(nemo::Network* net, string neuronData)
-{
-	vector<string> properties;
-  	size_t p0 = 0, p1 = string::npos;
-	while(p0 != string::npos) {
-		p1 = neuronData.find_first_of(",", p0);
-		if(p1 > p0)
-    		{
-      			string prop = neuronData.substr(p0, p1 - p0);
-      			properties.push_back(prop);
-    		}
-    		p0 = neuronData.find_first_not_of(",", p1);
- 	}
-	float a = ::atof(properties[0].c_str());
-	float b = ::atof(properties[1].c_str());
-	float c = ::atof(properties[2].c_str());
-	float d = ::atof(properties[3].c_str());
-	float u = ::atof(properties[4].c_str());
-	float v = ::atof(properties[5].c_str());
-	float sigma = ::atof(properties[6].c_str());
-	float nidx = ::atof(properties[7].c_str());
 	net->addNeuron(nidx, a, b, c, d, u, v, sigma);
 }
 
-void
-distributeNeurons(unsigned ncount, unsigned scount, unsigned worker, urng_t param)
-{
-	string neuronData;
-	unsigned strlen;
-	MPI::COMM_WORLD.Send(&ncount, 1, MPI::INT, worker, (int) 0);
-	MPI::COMM_WORLD.Send(&scount, 1, MPI::INT, worker, (int) 1);
-	for (unsigned i = 0; i < ncount; i++) {
-		neuronData = createNeuron(i,param);
-		strlen = neuronData.size()+1;
-		char msg [strlen];
-		msg[strlen-1] = 0;
-		memcpy(msg,neuronData.c_str(),strlen-1);
-		MPI::COMM_WORLD.Send(&strlen,1,MPI::INT,worker,(int) 2);
-		MPI::COMM_WORLD.Send(&msg,strlen,MPI::CHAR, worker, (int) 3);
-	}
-}
+
 
 void
-masterRoutine(unsigned neuronCount, rng_t rng, MPI::Status status)
+addInhibitoryNeuron(nemo::Network* net, unsigned nidx, urng_t& param)
 {
-	unsigned workers = MPI::COMM_WORLD.Get_size();
-	unsigned simRun, worker = 1;
-	if (workers == 1) return;
-	unsigned neuronCountPerNetwork = neuronCount / (workers-1);
-	unsigned lastNeuronCount = neuronCountPerNetwork + (neuronCount % (workers-1));
-	unsigned synapsesPerNeuron = neuronCountPerNetwork / 2;
+	float v = -65.0f;
+	float r1 = float(param());
+	float a = 0.02f + 0.08f * r1;
+	float r2 = float(param());
+	float b = 0.25f - 0.05f * r2;
+	float c = v;
+	float d = 2.0f;
+	float u = b * v;
+	float sigma = 2.0f;
+	net->addNeuron(nidx, a, b, c, d, u, v, sigma);
+}
+
+
+
+nemo::Network*
+construct(unsigned ncount, unsigned scount, unsigned dmax, bool stdp)
+{
+	rng_t rng;
+	/* Neuron parameters and weights are partially randomised */
 	urng_t randomParameter(rng, boost::uniform_real<double>(0, 1));
+	uirng_t randomTarget(rng, boost::uniform_int<>(0, ncount-1));
+	uirng_t randomDelay(rng, boost::uniform_int<>(1, dmax));
 
-	cout << "Blocking Random Simulation initiated" << endl;
-	for (; worker < workers-1; ++worker) {
-		distributeNeurons(neuronCountPerNetwork, synapsesPerNeuron, worker, randomParameter);
-	}
-	if (workers > 1) {
-		distributeNeurons(lastNeuronCount, synapsesPerNeuron, worker, randomParameter);
-	}
-	cout << "All workers are set up, running simulations" << endl;
+	nemo::Network* net = new nemo::Network();
 
-	worker = 1;
-	for (; worker < workers; ++worker) {
-		MPI::COMM_WORLD.Recv(&simRun, 1, MPI::INT, worker, (int) 4, status);
-		if (simRun == 0) break;
-	}
-	if (worker >= workers-1) cout << "Simulations were run successfully!" << endl;
-	else cout << "There is a problem with a worker " << worker << endl;
-}
-
-void
-workerRoutine(unsigned rank, rng_t rng, MPI::Status status)
-{
-	unsigned neuronCount,synapsesPerNeuron,strlen,reply;
-	MPI::COMM_WORLD.Recv(&neuronCount, 1, MPI::INT, MASTER, (int) 0, status);
-	MPI::COMM_WORLD.Recv(&synapsesPerNeuron, 1, MPI::INT, MASTER, (int) 1, status);
-	try {
-		/* Random neuron parameters */
-		urng_t randomParameter(rng, boost::uniform_real<double>(0, 1));
-		uirng_t randomTarget(rng, boost::uniform_int<>(0, neuronCount-1));
-		uirng_t randomDelay(rng, boost::uniform_int<>(1, 1));
-		nemo::Network* network = new nemo::Network();
-
-		for(unsigned nidx=0; nidx < neuronCount; ++nidx) {
-			MPI::COMM_WORLD.Recv(&strlen, 1, MPI::INT, MASTER, (int) 2, status);
-			char msg [strlen];
-			MPI::COMM_WORLD.Recv(&msg, strlen, MPI::CHAR, MASTER, (int) 3, status);
-			parseNeuron(network,msg);
+	for(unsigned nidx=0; nidx < ncount; ++nidx) {
+		if(nidx < (ncount * 4) / 5) { // excitatory
+			addExcitatoryNeuron(net, nidx, randomParameter);
+			for(unsigned s = 0; s < scount; ++s) {
+				net->addSynapse(nidx, randomTarget(), randomDelay(), 0.5f * float(randomParameter()), stdp);
+			}
+		} else { // inhibitory
+			addInhibitoryNeuron(net, nidx, randomParameter);
+			for(unsigned s = 0; s < scount; ++s) {
+				net->addSynapse(nidx, randomTarget(), 1U, float(-randomParameter()), 0);
+			}
 		}
-		for(unsigned nidx=0; nidx < neuronCount; ++nidx) network->addSynapse(nidx, randomTarget(), randomDelay(), 0.5f * float(randomParameter()), false);
-		unsigned duration = 500;
-		nemo::Configuration conf;
-		conf.setWriteOnlySynapses();
-		conf.enableLogging();
-		conf.setCpuBackend();
-		
-		cout << "Constructing network " << rank << endl;
-		boost::scoped_ptr<nemo::Network> net(network);
-		cout << "Creating simulation " << rank << endl;
-		boost::scoped_ptr<nemo::Simulation> sim(nemo::simulation(*network, conf));
-		cout << "Running simulation " << rank << endl;
-		simulate(sim.get(), duration, 0, cout);
-		reply = 1;
-		MPI::COMM_WORLD.Send(&reply, 1, MPI::INT, MASTER, (int) 4);
-	} catch(...) {
-		cerr << "random: An unknown error occurred\n";
-		reply = 0;
-		MPI::COMM_WORLD.Send(&reply, 1, MPI::INT, MASTER, (int) 4);
 	}
+	return net;
 }
+
+	} // namespace random
+} // namespace nemo
+
+
+#ifdef USING_MAIN
+
+
+#define LOG(cond, ...) if(cond) { fprintf(stdout, __VA_ARGS__); fprintf(stdout, "\n"); }
+
 
 int
 main(int argc, char* argv[])
 {
-	MPI::Init ( argc, argv );
-	MPI::Status status;
-	rng_t rng;
-	unsigned rank = MPI::COMM_WORLD.Get_rank();
-	if (rank == MASTER) {
-		masterRoutine(100, rng, status);
-	} else if (rank > MASTER) {
-		workerRoutine(rank, rng, status);
+	namespace po = boost::program_options;
+
+	try {
+
+		po::options_description desc = commonOptions();
+		desc.add_options()
+			("neurons,n", po::value<unsigned>()->default_value(1000), "number of neurons")
+			("synapses,m", po::value<unsigned>()->default_value(1000), "number of synapses per neuron")
+			("dmax,d", po::value<unsigned>()->default_value(1), "maximum excitatory delay,  where delays are uniform in range [1, dmax]")
+		;
+
+		po::variables_map vm = processOptions(argc, argv, desc);
+
+		unsigned ncount = vm["neurons"].as<unsigned>();
+		unsigned scount = vm["synapses"].as<unsigned>();
+		unsigned dmax = vm["dmax"].as<unsigned>();
+		unsigned duration = vm["duration"].as<unsigned>();
+		unsigned stdp = vm["stdp-period"].as<unsigned>();
+		unsigned verbose = vm["verbose"].as<unsigned>();
+		bool runBenchmark = vm.count("benchmark") != 0;
+
+		std::ofstream file;
+		std::string filename;
+
+		if(vm.count("output-file")) {
+			filename = vm["output-file"].as<std::string>();
+			file.open(filename.c_str()); // closes on destructor
+		}
+
+		std::ostream& out = filename.empty() ? std::cout : file;
+
+		LOG(verbose, "Constructing network");
+		boost::scoped_ptr<nemo::Network> net(nemo::random::construct(ncount, scount, dmax, stdp != 0));
+		LOG(verbose, "Creating configuration");
+		nemo::Configuration conf = configuration(vm);
+		LOG(verbose, "Simulation will run on %s", conf.backendDescription());
+		LOG(verbose, "Creating simulation");
+		boost::scoped_ptr<nemo::Simulation> sim(nemo::simulation(*net, conf));
+		LOG(verbose, "Running simulation");
+		if(runBenchmark) {
+			benchmark(sim.get(), ncount, scount, vm);
+		} else {
+			simulate(sim.get(), duration, stdp, out);
+		}
+		LOG(verbose, "Simulation complete");
+		return 0;
+	} catch(std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		return -1;
+	} catch(...) {
+		std::cerr << "random: An unknown error occurred\n";
+		return -1;
 	}
-	MPI::Finalize();
-	return 0;
+
 }
+
+#endif
