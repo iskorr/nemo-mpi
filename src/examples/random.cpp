@@ -144,10 +144,8 @@ workerRoutine(unsigned rank, rng_t rng, MPI::Status status)
 
 		for(unsigned nidx=0; nidx < neuronCount; ++nidx) {
 			MPI::COMM_WORLD.Recv(&strlen, 1, MPI::INT, MASTER, (int) 2, status);
-			cout << strlen;
 			char msg [strlen];
 			MPI::COMM_WORLD.Recv(&msg, strlen, MPI::CHAR, MASTER, (int) 3, status);
-			cout << "Received " << msg << endl;
 			parseNeuron(network,msg);
 		}
 		for(unsigned nidx=0; nidx < neuronCount; ++nidx) network->addSynapse(nidx, randomTarget(), randomDelay(), 0.5f * float(randomParameter()), false);
