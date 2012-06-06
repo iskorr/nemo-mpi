@@ -44,7 +44,7 @@ parseNeuron(nemo::Network* net, string neuronData)
 }
 
 void
-distributeNeurons(unsigned ncount, unsigned scount, unsigned worker, urng_t param)
+distributeNeuronAndSynapseData(unsigned ncount, unsigned scount, unsigned worker, urng_t param)
 {
 	string neuronData;
 	unsigned strlen;
@@ -74,10 +74,10 @@ masterRoutine(unsigned neuronCount, rng_t rng, MPI::Status status)
 
 	cout << "Blocking Random Simulation initiated" << endl;
 	for (; worker < workers-1; ++worker) {
-		distributeNeurons(neuronCountPerNetwork, synapsesPerNeuron, worker, randomParameter);
+		distributeNeuronAndSynapseData(neuronCountPerNetwork, synapsesPerNeuron, worker, randomParameter);
 	}
 	if (workers > 1) {
-		distributeNeurons(lastNeuronCount, synapsesPerNeuron, worker, randomParameter);
+		distributeNeuronAndSynapseData(lastNeuronCount, synapsesPerNeuron, worker, randomParameter);
 	}
 	cout << "All workers are set up, running simulations" << endl;
 

@@ -21,7 +21,6 @@ float*
 decodeNeuron(string neuronData)
 {
 	vector<string> properties;
-	float result [8];
   	size_t p0 = 0, p1 = string::npos;
 	while(p0 != string::npos) {
 		p1 = neuronData.find_first_of(",", p0);
@@ -32,6 +31,7 @@ decodeNeuron(string neuronData)
     		}
     		p0 = neuronData.find_first_not_of(",", p1);
  	}
-	for (unsigned i = 0; i < 8; ++i) result[i] = ::atof(properties[i].c_str());
+	float result [properties.size()];
+	for (unsigned i = 0; i < properties.size(); ++i) result[i] = ::atof(properties[i].c_str());
 	return result;
 }
