@@ -52,6 +52,7 @@ ADD_LIBRARY(nemo_base
 	runtime/RCM.cpp
 	StdpFunction.cpp
 	StdpProcess.cpp
+	parsing.cpp
 )
 
 TARGET_LINK_LIBRARIES(nemo_base ${LTDL_LIBRARY} ${Boost_LIBRARIES})

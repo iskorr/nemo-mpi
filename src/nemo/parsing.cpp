@@ -31,10 +31,10 @@ encodeNeuron(float* args)
 }
 
 float*
-decodeNeuron(string neuronData)
+decodeNeuron(const string& neuronData)
 {
 	vector<string> properties = decode(neuronData,",");
-	float result [properties.size()];
+	float* result = new float [properties.size()];
 	for (unsigned i = 0; i < properties.size(); ++i) result[i] = ::atof(properties[i].c_str());
 	return result;
 }
@@ -117,14 +117,4 @@ decode(const string& data, const string& delim)
     		p0 = data.find_first_not_of(delim, p1);
  	}
 	return properties;
-}
-
-char*
-buffer(const string& data, unsigned& strlen)
-{
-	strlen = data.size()+1;
-	char *msg = new char[strlen];
-	msg[strlen-1] = 0;
-	memcpy(msg,data.c_str(),strlen-1);
-	return msg;
 }

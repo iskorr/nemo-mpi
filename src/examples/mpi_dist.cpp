@@ -12,7 +12,7 @@
 
 #include <examples/common.hpp>
 #include <nemo.hpp>
-#include "parsing.hpp"
+#include <nemo/parsing.hpp>
 
 using namespace std;
 
@@ -32,12 +32,12 @@ createNeuron(unsigned nidx, urng_t& param)
 	float d = 8.0f - 6.0f*r1*r2;
 	float u = b * v;
 	float sigma = 5.0f;
-	string neuronData = encodeNeuron(a,b,c,d,u,v,sigma,nidx);
+	string neuronData = ::encodeNeuron(a,b,c,d,u,v,sigma,nidx);	
 	return neuronData;
 }
 
 void
-parseNeuron(nemo::Network* net, string neuronData)
+parseNeuron(nemo::Network* net, const string& neuronData)
 {
 	float* res = decodeNeuron(neuronData);
 	net->addNeuron((unsigned)res[7], res[0], res[1], res[2], res[3], res[4], res[5], res[6]);
@@ -69,7 +69,7 @@ masterRoutine(unsigned neuronCount, rng_t rng, MPI::Status status)
 	if (workers == 1) return;
 	unsigned neuronCountPerNetwork = neuronCount / (workers-1);
 	unsigned lastNeuronCount = neuronCountPerNetwork + (neuronCount % (workers-1));
-	unsigned synapsesPerNeuron = neuronCountPerNetwork / 2;
+	unsigned synapsesPerNeuron = neuronCountPerNetwork;
 	urng_t randomParameter(rng, boost::uniform_real<double>(0, 1));
 
 	cout << "Blocking Random Simulation initiated" << endl;
