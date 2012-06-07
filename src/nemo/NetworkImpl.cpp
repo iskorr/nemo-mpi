@@ -338,4 +338,5 @@ NetworkImpl::synapse_end() const
 }
 
 
-}	}
+	}
+}

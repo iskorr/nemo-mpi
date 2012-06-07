@@ -8,15 +8,15 @@
 using namespace std;
 
 string encodeNeuron(float a, float b, float c, float d, float u, float v, float sigma, unsigned nidx);
-float* decodeNeuron(const string& neuronData);
+float* decodeNeuron(string neuronData);
 
 string encodeConfiguration(nemo::Configuration &conf);
-void decodeConfiguration(nemo::Configuration &target, const string& confData);
+void decodeConfiguration(nemo::Configuration &target, string confData);
 
 string encodeSTDP(nemo::StdpFunction stdp);
-void decodeSTDP(nemo::Configuration &target, const string& stdp);
+void decodeSTDP(nemo::Configuration &target, string stdp);
 
-vector<string> decode(const string& data, const string& delim);
-char* buffer(const string& data, unsigned& strlen);
+vector<string> decode(string data, string delim);
+char* buffer(string data, unsigned& strlen);
 
 #endif

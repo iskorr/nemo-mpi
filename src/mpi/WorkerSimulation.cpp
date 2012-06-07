@@ -1,55 +1,46 @@
+#define MASTER 0
+#define CONFIGURATION_LENGTH_TAG 0
+#define CONFIGURATION_DATA_TAG 1
+#define NEURON_COUNT_TAG 2
+#define NEURON_LENGTH_TAG 3
+#define NEURON_DATA_TAG 4
+#define SYNAPSE_LENGTH_TAG 5
+#define SYNAPSE_DATA_TAG 6
 #include <vector>
-#include <boost/program_options.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/random.hpp>
+#include "parsing.hpp"
 
-namespace nemo {
-
-	namespace mpi {
-
-BlockingWorker (MPI_Comm world)
+WorkerSimulation::WorkerSimulation()
 {
-
-	int numberOfNeurons;
-	MPI_Recv(&numberOfNeurons, 1, MPI_INT, 0,1, MPI_COMM_WORLD, &stat);
-	nemo::Network* net = nemo::construct(numberOfNeurons,numberOfNeurons/4);
-	if (nemo == NULL) 	MPI_Send(0, 1, MPI_INT, 0,1, world);
-	else 	MPI_Send(1, 1, MPI_INT, 0,1, world);
-
+	receiveConfiguration();
+	receiveNeurons();
+	receiveSynapses();
 }
 
 void
-addDummyNeuron(nemo::Network* net, unsigned id)
+WorkerSimulation::receiveConfiguration()
 {
-	float v = -65.0f;
-	float a = 0.02f;
-	float b = 0.2f;
-	float c = v + 15.0f;
-	float d = 8.0f - 6.0f;
-	float u = b * v;
-	float sigma = 5.0f;
-	net->addNeuron(id, a, b, c, d, u, v, sigma);
+	unsigned confLength;
+	MPI::COMM_WORLD.Recv(&confLength, 1, MPI::INT, MASTER, CONFIGURATION_LENGTH_TAG, status);	
+	char confdata [confLength];
+	MPI::COMM_WORLD.Recv(&confdata, confLength, MPI::CHAR, MASTER, CONFIGURATION_DATA_TAG, status);
+	decodeConfiguration(configuration, confdata);
 }
 
-nemo::Network*
-construct(unsigned ncount, unsigned scount)
+void
+WorkerSimulation::receiveNeurons()
 {
-	rng_t rng;
-	/* Neuron parameters and weights are partially randomised */
-	uirng_t randomTarget(rng, boost::uniform_int<>(0, ncount-1));
-	uirng_t randomDelay(rng, boost::uniform_int<>(1, 2));
-
-	nemo::Network* net = new nemo::Network();
-
-	for(unsigned id=0; id < numberOfNeurons; id++) {
-		addDummyNeuron(net, id);
-		for(unsigned s = 0; s < numberOfSynapses; ++s) {
-			net->addSynapse(nidx, randomTarget(), randomDelay(), 0.5f, false);
-		}
+	unsigned neuronCount, neuronLength;
+	MPI::COMM_WORLD.Recv(&neuronCount, 1, MPI::INT, MASTER, NEURON_COUNT_TAG, status);
+	for (unsigned nidx = 0; nidx < neuronCount; ++nidx) {
+		MPI::COMM_WORLD.Recv(&neuronLength, 1, MPI::INT, MASTER, NEURON_LENGTH_TAG, status);
+		char neuronData [neuronLength];
+		MPI::COMM_WORLD.Recv(&neuronData, neuronLength, MPI::CHAR, MASTER, NEURON_DATA_TAG, status);
+		parseNeuron(network,neuronData);
 	}
-	return net;
 }
 
-	}
-
+void
+WorkerSimulation::receiveSynapses()
+{
+	/* Synapse distribution */
 }

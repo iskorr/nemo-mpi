@@ -3,25 +3,19 @@
 #include <set>
 #include <nemo/Network.hpp>
 
-namespace nemo {
+class WorkerSimulation {
 
-	class ConfigurationImpl;
-	class Configuration;
+	public:
 
-	namespace mpi {
+		WorkerSimulation::WorkerSimulation();
+		~WorkerSimulation();
 
-class BlockingWorker {
+	private:
+		
+		Configuration configuration;
+		WorkerSimulation::receiveConfiguration();
+		WorkerSimulation::receiveNeurons();
+		WorkerSimulation::receiveSynapses();
+		/* Two queues: incoming and outgoing spikes */
 
-	public :
-
-		BlockingWorker (MPI_Comm world);
-
-	private :
-
-		void addDummyNeuron(nemo::Network* net, unsigned id);
-		nemo::Network* construct(unsigned ncount, unsigned scount);
-
-};
-
-	}
 }

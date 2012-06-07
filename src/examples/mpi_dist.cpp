@@ -51,11 +51,11 @@ distributeNeuronAndSynapseData(unsigned ncount, unsigned scount, unsigned worker
 	MPI::COMM_WORLD.Send(&ncount, 1, MPI::INT, worker, (int) 0);
 	MPI::COMM_WORLD.Send(&scount, 1, MPI::INT, worker, (int) 1);
 	for (unsigned i = 0; i < ncount; i++) {
-		neuronData = createNeuron(i,param);
-		strlen = neuronData.size()+1;
+		string neuData = createNeuron(i,param);
+		strlen = neuData.size()+1;		
 		char msg [strlen];
 		msg[strlen-1] = 0;
-		memcpy(msg,neuronData.c_str(),strlen-1);
+		memcpy(msg, neuData.c_str(), strlen-1);
 		MPI::COMM_WORLD.Send(&strlen,1,MPI::INT,worker,(int) 2);
 		MPI::COMM_WORLD.Send(&msg,strlen,MPI::CHAR, worker, (int) 3);
 	}

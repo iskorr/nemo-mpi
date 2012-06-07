@@ -129,6 +129,8 @@ class NEMO_DLL_PUBLIC Configuration
 		/*! \return description of the chosen backend */
 		const char* backendDescription() const;
 
+		ConfigurationImpl* m_impl;
+
 	private:
 
 		friend SimulationBackend* simulationBackend(const Network&, const Configuration&);
@@ -137,7 +139,7 @@ class NEMO_DLL_PUBLIC Configuration
 
 		friend std::ostream& ::operator<<(std::ostream& o, Configuration const&);
 
-		ConfigurationImpl* m_impl;
+//		ConfigurationImpl* m_impl;
 
 		// undefined
 		Configuration& operator=(const Configuration&);
