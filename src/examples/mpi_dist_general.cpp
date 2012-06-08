@@ -84,20 +84,15 @@ main(int argc, char* argv[])
 	MPI::Init(argc, argv);
 	unsigned rank = MPI::COMM_WORLD.Get_rank();
 	namespace po = boost::program_options;
-	try {
-		if (rank == 0) {
-			nemo::Network* net(construct(1000, 50, 1, false));
-			nemo::Configuration conf;
-			conf.setWriteOnlySynapses();
-			conf.enableLogging();
-			conf.setCpuBackend();
-			MasterSimulation(*net,conf);
-		} else {
-			WorkerSimulation();
-		}
-	}  catch(...) {
-		cerr << "random: An unknown error occurred\n";
-		return 1;
+	if (rank == 0) {
+		nemo::Network* net(construct(100, 50, 1, false));
+		nemo::Configuration conf;
+		conf.setWriteOnlySynapses();
+		conf.enableLogging();
+		conf.setCpuBackend();
+		MasterSimulation(*net,conf);
+	} else {
+		WorkerSimulation();
 	}
 	MPI::Finalize();
 	return 0;

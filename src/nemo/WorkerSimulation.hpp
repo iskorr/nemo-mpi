@@ -16,6 +16,8 @@ class WorkerSimulation {
 		MPI::Status status;
 		MPI::Request request;
 		unsigned rank;
+		unsigned reply;
+		
 		void receiveConfiguration(nemo::Configuration& conf);
 		void receiveNeurons(nemo::Network* net);
 		void receiveSynapses(nemo::Network* net);

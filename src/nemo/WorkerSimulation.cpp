@@ -7,24 +7,20 @@
 
 WorkerSimulation::WorkerSimulation()
 {
-	unsigned reply;
+	reply = 0;
 	rank = MPI::COMM_WORLD.Get_rank();
 	nemo::Network* net = new nemo::Network();
 	nemo::Configuration conf;
-	cout << "Start Worker" << endl;
 	receiveConfiguration(conf);
-	cout << "Conf done Worker" << endl;
 	receiveNeurons(net);
-	cout << "Neurons done Worker" << endl;
 	receiveSynapses(net);
-	cout << "Synapses done Worker" << endl;
 	reply = 1;
 	MPI::COMM_WORLD.Send(&reply, 1, MPI::INT, MASTER, DISTRIBUTION_COMPLETE);
 }
 
 WorkerSimulation::~WorkerSimulation()
 {
-	;
+	MPI::COMM_WORLD.Send(&reply, 1, MPI::INT, MASTER, DISTRIBUTION_COMPLETE);
 }
 
 void

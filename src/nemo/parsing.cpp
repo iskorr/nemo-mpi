@@ -25,7 +25,7 @@ encodeNeuron(float* args)
 {
 	ostringstream input;
 	input << args[0];
-	for (unsigned i = 1; i < 7; ++i) input << "," << args[i];
+	for (unsigned i = 1; i < 8; ++i) input << "," << args[i];
 	string neuronData(input.str());
 	return neuronData;
 }
