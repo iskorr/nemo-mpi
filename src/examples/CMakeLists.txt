@@ -22,7 +22,10 @@ TARGET_LINK_LIBRARIES(kuramoto nemo ${Boost_LIBRARIES})
 ADD_EXECUTABLE(mpi_dist mpi_dist.cpp common.cpp)
 TARGET_LINK_LIBRARIES(mpi_dist nemo ${Boost_LIBRARIES})
 
-SET(INSTALL_FILES torus.cpp random.cpp mpi_dist.cpp common.cpp)
+ADD_EXECUTABLE(mpi_dist_general mpi_dist_general.cpp common.cpp)
+TARGET_LINK_LIBRARIES(mpi_dist_general nemo ${Boost_LIBRARIES})
+
+SET(INSTALL_FILES torus.cpp random.cpp mpi_dist.cpp mpi_dist_general.cpp common.cpp)
 
 IF(UNIX)
 	SET(INSTALL_EXAMPLE_SRC_DIR "share/nemo/examples")

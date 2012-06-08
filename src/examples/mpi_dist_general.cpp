@@ -1,18 +1,17 @@
-#include <nemo/mpi/MasterSimulation.hpp>
-#include <nemo/mpi/WorkerSimulation.hpp>
 #include <vector>
-
-#ifdef USING_MAIN
-#	include <string>
-#	include <iostream>
-#	include <fstream>
-#	include <boost/program_options.hpp>
-#	include <boost/scoped_ptr.hpp>
-#	include <examples/common.hpp>
-#endif
-
+#include <string>
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+#include <boost/scoped_ptr.hpp>
 #include <boost/random.hpp>
+#include <examples/common.hpp>
 #include <nemo.hpp>
+#include <nemo/parsing.hpp>
+#include <nemo/MasterSimulation.hpp>
+#include <nemo/WorkerSimulation.hpp>
+using namespace std;
 
 typedef boost::mt19937 rng_t;
 typedef boost::variate_generator<rng_t&, boost::uniform_real<double> > urng_t;
@@ -82,36 +81,24 @@ construct(unsigned ncount, unsigned scount, unsigned dmax, bool stdp)
 int
 main(int argc, char* argv[])
 {
+	MPI::Init(argc, argv);
+	unsigned rank = MPI::COMM_WORLD.Get_rank();
 	namespace po = boost::program_options;
-
 	try {
-
-		po::options_description desc = commonOptions();
-		desc.add_options()
-			("neurons,n", po::value<unsigned>()->default_value(1000), "number of neurons")
-			("synapses,m", po::value<unsigned>()->default_value(1000), "number of synapses per neuron")
-			("dmax,d", po::value<unsigned>()->default_value(1), "maximum excitatory delay,  where delays are uniform in range [1, dmax]")
-		;
-
-		po::variables_map vm = processOptions(argc, argv, desc);
-
-		unsigned ncount = vm["neurons"].as<unsigned>();
-		unsigned scount = vm["synapses"].as<unsigned>();
-		unsigned dmax = vm["dmax"].as<unsigned>();
-		unsigned duration = vm["duration"].as<unsigned>();
-		unsigned stdp = vm["stdp-period"].as<unsigned>();
-		unsigned verbose = vm["verbose"].as<unsigned>();
-		bool runBenchmark = vm.count("benchmark") != 0;
-
-		std::ofstream file;
-		std::string filename;
-
-		std::ostream& out = std::cout;
-
-		boost::scoped_ptr<nemo::Network> net(nemo::random::construct(ncount, scount, dmax, stdp != 0));
-		nemo::Configuration conf = configuration(vm);
-		MasterSimulation
+		if (rank == 0) {
+			nemo::Network* net(construct(1000, 50, 1, false));
+			nemo::Configuration conf;
+			conf.setWriteOnlySynapses();
+			conf.enableLogging();
+			conf.setCpuBackend();
+			MasterSimulation(*net,conf);
+		} else {
+			WorkerSimulation();
+		}
+	}  catch(...) {
+		cerr << "random: An unknown error occurred\n";
+		return 1;
 	}
-	
+	MPI::Finalize();
 	return 0;
 }

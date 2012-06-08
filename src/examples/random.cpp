@@ -72,17 +72,17 @@ construct(unsigned ncount, unsigned scount, unsigned dmax, bool stdp)
 	nemo::Network* net = new nemo::Network();
 
 	for(unsigned nidx=0; nidx < ncount; ++nidx) {
-		if(nidx < (ncount * 4) / 5) { // excitatory
+//		if(nidx < (ncount * 4) / 5) { // excitatory
 			addExcitatoryNeuron(net, nidx, randomParameter);
 			for(unsigned s = 0; s < scount; ++s) {
-				net->addSynapse(nidx, randomTarget(), randomDelay(), 0.5f * float(randomParameter()), stdp);
+				net->addSynapse(nidx, randomTarget(), randomDelay(), 0.5f * float(randomParameter()), false);
 			}
-		} else { // inhibitory
+/*		} else { // inhibitory
 			addInhibitoryNeuron(net, nidx, randomParameter);
 			for(unsigned s = 0; s < scount; ++s) {
 				net->addSynapse(nidx, randomTarget(), 1U, float(-randomParameter()), 0);
 			}
-		}
+		}*/
 	}
 	return net;
 }

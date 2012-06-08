@@ -207,12 +207,14 @@ class NEMO_BASE_DLL_PUBLIC Network : public ReadableNetwork
 		/*! \copydoc nemo::network::Generator::maxDelay */
 		unsigned neuronCount() const;
 
+		class network::NetworkImpl* m_impl;
+
 	private :
 
 		friend SimulationBackend* simulationBackend(const Network&, const Configuration&);
 		friend class nemo::mpi::Master;
 
-		class network::NetworkImpl* m_impl;
+		//class network::NetworkImpl* m_impl;
 
 		// undefined
 		Network(const Network&);

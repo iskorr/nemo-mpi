@@ -40,7 +40,7 @@ decodeNeuron(const string& neuronData)
 }
 
 string
-encodeConfiguration(nemo::Configuration &conf)
+encodeConfiguration(const nemo::Configuration &conf)
 {
 	unsigned logging = 0;
 	if (conf.loggingEnabled()) logging = 1;
@@ -61,7 +61,6 @@ decodeConfiguration(nemo::Configuration &target, const string& confData)
 {
 	vector<string> properties = decode(confData,"<>");
 	float result [properties.size()];
-	for (unsigned i = 0; i < properties.size()-1; ++i) cout << properties[i] << endl;
 	for (unsigned i = 0; i < properties.size()-1; ++i) result[i] = ::atof(properties[i].c_str());
 	if (result[0] == 1) target.enableLogging();
 	else target.disableLogging();
@@ -89,7 +88,7 @@ void
 decodeSTDP(nemo::Configuration &target, const string& stdp)
 {
 	vector<string> properties = decode(stdp,",");
-	float result [properties.size()];
+	float result [44];
 	for (unsigned i = 0; i < properties.size(); ++i) result[i] = ::atof(properties[i].c_str());
 	vector<float> prefire;
 	vector<float> postfire;
@@ -100,6 +99,32 @@ decodeSTDP(nemo::Configuration &target, const string& stdp)
 	float maxEW = result[42];
 	float minEW = result[43];
 	target.setStdpFunction(prefire,postfire,minEW,maxEW,minIW,maxIW);
+}
+
+string
+encodeSynapse(const nemo::network::synapse_iterator& s, bool external)
+{
+	ostringstream input;
+	unsigned source = s->source;
+	int target = s->target();
+	unsigned delay = s->delay;
+	float weight = s->weight();
+	unsigned plastic = 0;
+	if (s->plastic()) plastic = 1;
+	if (external) input << source << "," << (int)-target << "," << delay << "," << weight << "," << plastic;
+	else input << source << "," << target << "," << delay << "," << weight << "," << plastic;
+	string synapseData(input.str());
+	return synapseData;
+}
+
+void
+decodeSynapse(nemo::Network* net, const string& synapseData)
+{
+	vector<string> properties = decode(synapseData,",");
+	float* result = new float [properties.size()];
+	for (unsigned i = 0; i < properties.size()-1; ++i) result[i] = ::atof(properties[i].c_str());
+	net->addSynapse((unsigned) result[0], (unsigned) result[1], (unsigned) result[2], result[3], (unsigned char)atoi(properties[4].c_str()));
+	
 }
 
 vector<string>
