@@ -1,7 +1,7 @@
 #ifndef WORKER_SIM_HPP
 #define WORKER_SIM_HPP
 #include "mpi.h"
-#include <nemo/MapperSim.hpp>
+#include "MapperSim.hpp"
 #include <nemo/Network.hpp>
 #include <nemo/Configuration.hpp>
 #include <string>
