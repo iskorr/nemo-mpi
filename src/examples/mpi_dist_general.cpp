@@ -81,18 +81,24 @@ construct(unsigned ncount, unsigned scount, unsigned dmax, bool stdp)
 int
 main(int argc, char* argv[])
 {
+	unsigned neurons = 100, synapses = 50, duration = 1000, dmax = 1;
 	MPI::Init(argc, argv);
+	if (argc > 1) neurons = atoi(argv[1]);
+	if (argc > 2) synapses = atoi(argv[2]);
+	if (argc > 3) duration = atoi(argv[3]);
+	if (argc > 4) dmax = atoi(argv[4]);
 	unsigned rank = MPI::COMM_WORLD.Get_rank();
+	unsigned workers = MPI::COMM_WORLD.Get_size();
 	namespace po = boost::program_options;
 	if (rank == 0) {
-		nemo::Network* net(construct(100, 50, 1, false));
+		nemo::Network* net(construct(neurons, synapses, dmax, false));
 		nemo::Configuration conf;
 		conf.setWriteOnlySynapses();
 		conf.enableLogging();
 		conf.setCpuBackend();
-		MasterSimulation(*net,conf);
+		MasterSimulation(*net,conf, duration);
 	} else {
-		WorkerSimulation();
+		WorkerSimulation(rank, workers);
 	}
 	MPI::Finalize();
 	return 0;

@@ -17,6 +17,8 @@
 #include <nemo/network/programmatic/synapse_iterator.hpp>
 #include "exception.hpp"
 #include "synapse_indices.hpp"
+#include <vector>
+#include <initializer_list>
 
 namespace nemo {
 	namespace network {
@@ -336,7 +338,6 @@ NetworkImpl::synapse_end() const
 
 	return synapse_iterator(new programmatic::synapse_iterator(ni, ni, gi, gi));
 }
-
 
 	}
 }

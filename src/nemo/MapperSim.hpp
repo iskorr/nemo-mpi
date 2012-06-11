@@ -15,7 +15,7 @@ class MapperSim
 {
 public:
 	MapperSim(unsigned neuronCount, unsigned workerCount);
-	unsigned rankOf(nidx_t n) const;
+	unsigned rankOf(unsigned neuron) const;
 	unsigned neuronCount() const;
 	unsigned workerCount() const;
 	unsigned workerSize() const;

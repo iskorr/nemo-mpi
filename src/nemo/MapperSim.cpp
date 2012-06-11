@@ -13,9 +13,9 @@ MapperSim::MapperSim(unsigned neuronCount, unsigned workerCount) :
 }
 
 unsigned
-MapperSim::rankOf(nidx_t n) const
+MapperSim::rankOf(unsigned neuron) const
 {
-	return 1 + n / m_workerSize;
+	return 1 + neuron / m_workerSize;
 }
 
 unsigned

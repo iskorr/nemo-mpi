@@ -187,5 +187,4 @@ Network::neuronCount() const
 	return m_impl->neuronCount();
 }
 
-
 } // end namespace nemo

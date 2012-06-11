@@ -21,8 +21,9 @@ encodeNeuron(float a, float b, float c, float d, float u, float v, float sigma, 
 }
 
 string
-encodeNeuron(float* args)
+encodeNeuron(float* args, unsigned nidx)
 {
+	args[7] = nidx;
 	ostringstream input;
 	input << args[0];
 	for (unsigned i = 1; i < 8; ++i) input << "," << args[i];
@@ -102,7 +103,7 @@ decodeSTDP(nemo::Configuration &target, const string& stdp)
 }
 
 string
-encodeSynapse(const nemo::network::synapse_iterator& s, bool external)
+encodeSynapse(const nemo::network::synapse_iterator& s, unsigned type)
 {
 	ostringstream input;
 	unsigned source = s->source;
@@ -111,20 +112,11 @@ encodeSynapse(const nemo::network::synapse_iterator& s, bool external)
 	float weight = s->weight();
 	unsigned plastic = 0;
 	if (s->plastic()) plastic = 1;
-	if (external) input << source << "," << (int)-target << "," << delay << "," << weight << "," << plastic;
-	else input << source << "," << target << "," << delay << "," << weight << "," << plastic;
+	if (type == 1) input << source << "," << target << "," << delay << "," << weight << "," << plastic;
+	else if (type == 2) input << (int)-source << "," << target << "," << delay << "," << weight << "," << plastic;
+	else if (type == 3) input << source << "," << (int)-target << "," << delay << "," << weight << "," << plastic;
 	string synapseData(input.str());
 	return synapseData;
-}
-
-void
-decodeSynapse(nemo::Network* net, const string& synapseData)
-{
-	vector<string> properties = decode(synapseData,",");
-	float* result = new float [properties.size()];
-	for (unsigned i = 0; i < properties.size()-1; ++i) result[i] = ::atof(properties[i].c_str());
-	net->addSynapse((unsigned) result[0], (unsigned) result[1], (unsigned) result[2], result[3], (unsigned char)atoi(properties[4].c_str()));
-	
 }
 
 vector<string>

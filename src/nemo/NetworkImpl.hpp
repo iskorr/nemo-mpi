@@ -109,6 +109,7 @@ class NEMO_BASE_DLL_PUBLIC NetworkImpl : public Generator, public ReadableNetwor
 		/*! \copydoc nemo::network::Generator::neuronType */
 		const NeuronType& neuronType(unsigned) const;
 
+
 	private :
 
 		/* Neurons are grouped by neuron type */
@@ -147,6 +148,7 @@ class NEMO_BASE_DLL_PUBLIC NetworkImpl : public Generator, public ReadableNetwor
 		std::vector<synapse_id> m_queriedSynapseIds;
 
 		const Axon& axon(nidx_t source) const;
+
 
 };
 

@@ -10,4 +10,6 @@
 #define SYNAPSE_DATA_TAG 6
 #define SYNAPSE_END_TAG 7
 #define DISTRIBUTION_COMPLETE 8
+#define SIM_STEP 9
+#define COMMUNICATION_TAG 10
 #endif
