@@ -12,15 +12,6 @@
 using namespace std;
 
 string
-encodeNeuron(float a, float b, float c, float d, float u, float v, float sigma, unsigned nidx)
-{
-	ostringstream input;
-	input << a << "," << b << "," << c << "," << d << "," << u << "," << v << "," << sigma << "," << nidx;
-	string neuronData(input.str());
-	return neuronData;
-}
-
-string
 encodeNeuron(float* args, unsigned nidx)
 {
 	args[7] = nidx;

@@ -2,10 +2,8 @@
 #define MASTER_SIM_HPP
 #include <nemo/Network.hpp>
 #include <nemo/Configuration.hpp>
-#include <nemo/network/Generator.hpp>
 #include "MapperSim.hpp"
 #include "mpi.h"
-#include <nemo.h>
 
 namespace nemo {
 	namespace mpi_dist {
