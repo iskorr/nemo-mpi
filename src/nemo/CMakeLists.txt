@@ -53,7 +53,7 @@ ADD_LIBRARY(nemo_base
 	runtime/RCM.cpp
 	StdpFunction.cpp
 	StdpProcess.cpp
-#	My MPI Implementation
+	# MPI
 	MasterSimulation.cpp
 	WorkerSimulation.cpp
 	MapperSim.cpp
@@ -78,9 +78,9 @@ INSTALL(FILES
 		Simulation.hpp
 		ReadableNetwork.hpp
 		# MPI
-		MasterSimulation.hpp
-		WorkerSimulation.hpp
-		MapperSim.hpp
+		MasterSimulation.cpp
+		WorkerSimulation.cpp
+		MapperSim.cpp
 		${CMAKE_CURRENT_BINARY_DIR}/config.h
 	DESTINATION ${INSTALL_INCLUDE_DIR}/nemo
 )
