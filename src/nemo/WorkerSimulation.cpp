@@ -5,11 +5,13 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 #include <boost/scoped_ptr.hpp>
 
 #include <nemo/Simulation.hpp>
 #include <nemo/SimulationBackend.hpp>
 #include <nemo.hpp>
+using namespace std;
 
 WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workers) :
 						rank(rank), workers(workers)
