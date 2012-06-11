@@ -72,17 +72,17 @@ construct(unsigned ncount, unsigned scount, unsigned dmax, bool stdp)
 	nemo::Network* net = new nemo::Network();
 
 	for(unsigned nidx=0; nidx < ncount; ++nidx) {
-//		if(nidx < (ncount * 4) / 5) { // excitatory
+		if(nidx < (ncount * 4) / 5) { // excitatory
 			addExcitatoryNeuron(net, nidx, randomParameter);
 			for(unsigned s = 0; s < scount; ++s) {
 				net->addSynapse(nidx, randomTarget(), randomDelay(), 0.5f * float(randomParameter()), false);
 			}
-/*		} else { // inhibitory
+		} else { // inhibitory
 			addInhibitoryNeuron(net, nidx, randomParameter);
 			for(unsigned s = 0; s < scount; ++s) {
 				net->addSynapse(nidx, randomTarget(), 1U, float(-randomParameter()), 0);
 			}
-		}*/
+		}
 	}
 	return net;
 }
@@ -116,9 +116,9 @@ main(int argc, char* argv[])
 		unsigned ncount = vm["neurons"].as<unsigned>();
 		unsigned scount = vm["synapses"].as<unsigned>();
 		unsigned dmax = vm["dmax"].as<unsigned>();
-		unsigned duration = vm["duration"].as<unsigned>();
+		unsigned duration = 1000; //vm["duration"].as<unsigned>();
 		unsigned stdp = vm["stdp-period"].as<unsigned>();
-		unsigned verbose = vm["verbose"].as<unsigned>();
+		unsigned verbose = 1;//vm["verbose"].as<unsigned>();
 		bool runBenchmark = vm.count("benchmark") != 0;
 
 		std::ofstream file;

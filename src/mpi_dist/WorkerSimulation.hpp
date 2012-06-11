@@ -9,6 +9,9 @@
 #include <deque>
 using namespace std;
 
+namespace nemo {
+	namespace mpi_dist {
+
 class WorkerSimulation {
 
 	public:
@@ -20,7 +23,7 @@ class WorkerSimulation {
 		
 		MPI::Status status;
 		MPI::Request recv_request, send_request;
-		unsigned rank, reply, neuronCount, workers,spikecount;
+		unsigned rank, reply, neuronCount, workers;
 		vector <vector <unsigned> > outgoingSynapses;
 		vector <vector <vector <float> > > incomingSynapses;
 		vector <pair <unsigned, float> > stim_template;
@@ -42,4 +45,7 @@ class WorkerSimulation {
 		unsigned mapLocal(unsigned neuron);
 		unsigned mapGlobal(unsigned neuron);
 };
+
+	}
+}
 #endif	

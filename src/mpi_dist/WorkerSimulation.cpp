@@ -5,18 +5,18 @@
 
 #include <vector>
 #include <string>
-#include <iostream>
 #include <boost/scoped_ptr.hpp>
 
 #include <nemo/Simulation.hpp>
 #include <nemo/SimulationBackend.hpp>
 #include <nemo.hpp>
-using namespace std;
+
+namespace nemo {
+	namespace mpi_dist {
 
 WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workers) :
 						rank(rank), workers(workers)
 {
-	spikecount = 0;
 	nemo::Network* net = new nemo::Network();
 	nemo::Configuration conf;
 	receiveConfiguration(conf);
@@ -27,7 +27,6 @@ WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workers) :
 	nemo::Simulation* sim = nemo::simulation(*net, conf);
 	MPI_Barrier(MPI_COMM_WORLD);
 	runSimulation(sim);
-	cout << "Spikes on Node " << rank << " are " << spikecount << endl;
 }
 
 WorkerSimulation::~WorkerSimulation()
@@ -72,9 +71,8 @@ WorkerSimulation::distributeOutgoingSpikes(const vector <unsigned>& output)
 	for(unsigned id = 0; id < output.size(); ++id) {
 		for (unsigned target = 0; target < outgoingSynapses[id].size(); ++target) {
 			msg = mapGlobal(output[id]);
-			//cout << "Sending spike from " << msg << " to node " << outgoingSynapses[id][target] << endl;
+			cout << "Sending spike from " << msg << " to node " << outgoingSynapses[id][target] << endl;
 			send_request = MPI::COMM_WORLD.Isend(&msg, 1, MPI::INT, outgoingSynapses[id][target], COMMUNICATION_TAG);
-			spikecount++;
 		}
 		send_request.Wait(status);
 	}
@@ -206,4 +204,7 @@ WorkerSimulation::getSynapseData(unsigned source)
 	unsigned i = 0;
 	while ((unsigned) incomingSynapses[i][0][0] != source) i++;
 	return incomingSynapses[i];
+}
+
+	}
 }

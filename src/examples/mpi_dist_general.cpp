@@ -1,16 +1,15 @@
+#include <mpi.h>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <mpi.h>
 #include <boost/scoped_ptr.hpp>
 #include <boost/random.hpp>
 #include <examples/common.hpp>
 #include <nemo.hpp>
-#include <nemo/parsing.hpp>
-#include <nemo/MasterSimulation.hpp>
-#include <nemo/WorkerSimulation.hpp>
+#include <mpi_dist/MasterSimulation.hpp>
+#include <mpi_dist/WorkerSimulation.hpp>
 using namespace std;
 
 typedef boost::mt19937 rng_t;
@@ -96,9 +95,9 @@ main(int argc, char* argv[])
 		conf.setWriteOnlySynapses();
 		conf.enableLogging();
 		conf.setCpuBackend();
-		MasterSimulation(*net,conf, duration);
+		nemo::mpi_dist::MasterSimulation(*net,conf, duration);
 	} else {
-		WorkerSimulation(rank, workers);
+		nemo::mpi_dist::WorkerSimulation(rank, workers);
 	}
 	MPI::Finalize();
 	return 0;
