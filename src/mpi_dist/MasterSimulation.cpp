@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <nemo/parsing.hpp>
+#include "parsing.hpp"
 #include <nemo/Network.hpp>
 #include <nemo/Configuration.hpp>
 #include <nemo/Timer.hpp>

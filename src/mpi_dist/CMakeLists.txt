@@ -10,10 +10,11 @@ INCLUDE_DIRECTORIES(
 	${CMAKE_SOURCE_DIR}/src
 )
 
-ADD_LIBRARY(nemo_mpi_dist SHARED
+ADD_LIBRARY(nemo_mpi_dist
 	MasterSimulation.cpp
 	WorkerSimulation.cpp
 	MapperSim.cpp
+	parsing.cpp
 )
 
 SET_TARGET_PROPERTIES(nemo_mpi_dist PROPERTIES

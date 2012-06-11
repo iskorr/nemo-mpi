@@ -48,15 +48,10 @@ ADD_LIBRARY(nemo_base
 	OutgoingDelays.cpp
 	Plugin.cpp
 	ReadableNetwork.cpp
-	parsing.cpp
 	RNG.cpp
 	runtime/RCM.cpp
 	StdpFunction.cpp
 	StdpProcess.cpp
-	# MPI
-	MasterSimulation.cpp
-	WorkerSimulation.cpp
-	MapperSim.cpp
 )
 
 TARGET_LINK_LIBRARIES(nemo_base ${LTDL_LIBRARY} ${Boost_LIBRARIES})
@@ -77,10 +72,6 @@ INSTALL(FILES
 		Network.hpp
 		Simulation.hpp
 		ReadableNetwork.hpp
-		# MPI
-		MasterSimulation.cpp
-		WorkerSimulation.cpp
-		MapperSim.cpp
 		${CMAKE_CURRENT_BINARY_DIR}/config.h
 	DESTINATION ${INSTALL_INCLUDE_DIR}/nemo
 )

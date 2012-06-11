@@ -12,7 +12,8 @@
 
 #include <examples/common.hpp>
 #include <nemo.hpp>
-#include <nemo/parsing.hpp>
+
+#include "parsing.hpp"
 
 using namespace std;
 
@@ -32,7 +33,7 @@ createNeuron(unsigned nidx, urng_t& param)
 	float d = 8.0f - 6.0f*r1*r2;
 	float u = b * v;
 	float sigma = 5.0f;
-	string neuronData = ::encodeNeuron(a,b,c,d,u,v,sigma,nidx);	
+	string neuronData = encodeNeuron(a,b,c,d,u,v,sigma,nidx);	
 	return neuronData;
 }
 

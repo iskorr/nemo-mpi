@@ -19,7 +19,7 @@ TARGET_LINK_LIBRARIES(random nemo ${Boost_LIBRARIES})
 ADD_EXECUTABLE(kuramoto kuramoto.cpp common.cpp)
 TARGET_LINK_LIBRARIES(kuramoto nemo ${Boost_LIBRARIES})
 
-ADD_EXECUTABLE(mpi_dist mpi_dist.cpp common.cpp)
+ADD_EXECUTABLE(mpi_dist mpi_dist.cpp parsing.cpp common.cpp)
 TARGET_LINK_LIBRARIES(mpi_dist nemo ${Boost_LIBRARIES})
 
 ADD_EXECUTABLE(mpi_dist_general mpi_dist_general.cpp common.cpp)
@@ -38,4 +38,4 @@ IF(WIN32)
 ENDIF(WIN32)
 
 INSTALL(FILES ${INSTALL_FILES} DESTINATION ${INSTALL_EXAMPLE_SRC_DIR})
-INSTALL(TARGETS mpi_dist random torus DESTINATION ${INSTALL_EXAMPLE_BIN_DIR})
+INSTALL(TARGETS mpi_dist_general mpi_dist random torus DESTINATION ${INSTALL_EXAMPLE_BIN_DIR})
