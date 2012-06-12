@@ -1,14 +1,10 @@
 #include "parsing.hpp"
 #include <vector>
-#include <string>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <nemo/StdpFunction.hpp>
-#include <nemo/Configuration.hpp>
-#include <nemo/ConfigurationImpl.hpp>
 using namespace std;
 
 string
@@ -104,10 +100,27 @@ encodeSynapse(const nemo::network::synapse_iterator& s, unsigned type)
 	unsigned plastic = 0;
 	if (s->plastic()) plastic = 1;
 	if (type == 1) input << source << "," << target << "," << delay << "," << weight << "," << plastic;
-	else if (type == 2) input << (int)-source << "," << target << "," << delay << "," << weight << "," << plastic;
-	else if (type == 3) input << source << "," << (int)-target << "," << delay << "," << weight << "," << plastic;
+	else if (type == 2) input << (int)-(source+1) << "," << target << "," << delay << "," << weight << "," << plastic;
+	else if (type == 3) input << source << "," << (int)-(target+1) << "," << delay << "," << weight << "," << plastic;
 	string synapseData(input.str());
 	return synapseData;
+}
+
+vector<string>
+encodeMapper(nemo::mpi_dist::MapperSim& mapper)
+{
+	unsigned workers = mapper.workerCount();
+	vector<string> res;
+	res.resize(workers);
+	for (unsigned i = 0; i < workers; ++i) {
+		ostringstream input;
+		vector<unsigned> neurons = mapper.retrieveNeurons(i+1);
+		input << neurons[0];
+		for (unsigned j = 1; j < neurons.size(); ++j) input << "," << neurons[j];
+		string mapData(input.str());
+		res[i] = mapData;
+	}
+	return res;
 }
 
 vector<string>

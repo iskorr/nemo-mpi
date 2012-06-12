@@ -1,31 +1,34 @@
-#ifndef MAPPER_SIM_HPP
-#define MAPPER_SIM_HPP
 /* This is a mapper class that would define the clusterization of the network
  */
-
-// The implementation of the cluster mapping algorithm is going to be here.
-// Then depending on the worker id, the particular set of neurons could be called.
-
+#ifndef MAPPER_SIM_HPP
+#define MAPPER_SIM_HPP
 #include <nemo/internal_types.h>
-
-using namespace std;
+#include <nemo/Network.hpp>
+#include <string>
 
 namespace nemo {
 	namespace mpi_dist {
 
 class MapperSim
 {
-public:
-	MapperSim(unsigned neuronCount, unsigned workerCount);
-	unsigned rankOf(unsigned neuron) const;
-	unsigned neuronCount() const;
-	unsigned workerCount() const;
-	unsigned workerSize() const;
-
 private:
 	unsigned workers;
 	unsigned neurons;
-	unsigned m_workerSize;
+	std::vector <unsigned>* neuronMap;
+	std::vector <unsigned> backMap;
+public:
+	MapperSim(unsigned workerCount);
+	MapperSim(const nemo::Network& net, unsigned workerCount);
+	void set(const std::vector<std::string>& mapperData, unsigned neuronCount);
+	unsigned rankOf(unsigned neuron) const;
+	unsigned neuronCount() const;
+	unsigned workerCount() const;
+	std::vector <unsigned> retrieveNeurons(unsigned rank);
+	unsigned mapLocal(unsigned gidx);
+	unsigned mapGlobal(unsigned lidx, unsigned rank);
+	/* Cluster mapping */
+	void allocateNeurons(const nemo::Network& net);
+
 };
 	}
 }

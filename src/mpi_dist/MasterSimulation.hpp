@@ -19,8 +19,9 @@ class MasterSimulation {
 
 		MPI::Status status;
 		unsigned workers;
+		void distributeMapper(nemo::mpi_dist::MapperSim& mapper);
 		void distributeConfiguration(const nemo::Configuration& conf);
-		void distributeNeurons(const nemo::Network& net, const MapperSim& mapper);
+		void distributeNeurons(const nemo::Network& net, MapperSim& mapper);
 		void distributeSynapses(const nemo::network::NetworkImpl& net, const MapperSim& mapper);
 		float* getNeuronIdx(unsigned idx, const nemo::Network& net);
 		void simulate(unsigned duration);

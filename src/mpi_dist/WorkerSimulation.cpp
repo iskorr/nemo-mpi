@@ -1,24 +1,24 @@
-#include "mpi.h"
 #include "WorkerSimulation.hpp"
 #include "mpi_tags.hpp"
 #include "parsing.hpp"
-
 #include <vector>
 #include <string>
 #include <boost/scoped_ptr.hpp>
-
 #include <nemo/Simulation.hpp>
 #include <nemo/SimulationBackend.hpp>
 #include <nemo.hpp>
+using namespace std;
 
 namespace nemo {
 	namespace mpi_dist {
 
-WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workers) :
-						rank(rank), workers(workers)
+WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workerCount) :
+						mapper(workerCount-1), rank(rank),  workers(workerCount)
 {
+	outfirings = 0, spikes = 0;
 	nemo::Network* net = new nemo::Network();
 	nemo::Configuration conf;
+	receiveMapper();
 	receiveConfiguration(conf);
 	receiveNeurons(net);
 	receiveSynapses(net);
@@ -49,7 +49,8 @@ WorkerSimulation::runSimulation(nemo::Simulation* sim)
 		MPI::COMM_WORLD.Send(&stepDONE, 1, MPI::INT, MASTER, SIM_STEP);
 		MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
 	}
-
+	MPI::COMM_WORLD.Send(&outfirings, 1, MPI::INT, MASTER, FIRINGS);
+	MPI::COMM_WORLD.Send(&spikes, 1, MPI::INT, MASTER, SPIKES);
 }
 
 
@@ -57,8 +58,11 @@ void
 WorkerSimulation::enqueueIncomingSpikes(nemo::Simulation* sim, vector <pair<unsigned,float> >& stimulus)
 {
 	while(!incoming.empty()) {
-		vector < vector <float> > synData = getSynapseData(incoming.front());
-		for (unsigned i = 1; i < synData.size();++i) stimulus[synData[i][0]].second += synData[i][2];
+		vector < inc_syn > synData = getSynapseData(incoming.front());
+		for (unsigned i = 0; i < synData.size();++i) {
+			stimulus[synData[i].target].second += synData[i].weight;
+			spikes++;
+		}
 		incoming.pop_front();
 	}
 }
@@ -70,9 +74,10 @@ WorkerSimulation::distributeOutgoingSpikes(const vector <unsigned>& output)
 	int buf;
 	for(unsigned id = 0; id < output.size(); ++id) {
 		for (unsigned target = 0; target < outgoingSynapses[id].size(); ++target) {
-			msg = mapGlobal(output[id]);
-			cout << "Sending spike from " << msg << " to node " << outgoingSynapses[id][target] << endl;
+			msg = mapper.mapGlobal(output[id],rank);
+			//cout << "Sending spike from " << msg << " to node " << outgoingSynapses[id][target] << endl;
 			send_request = MPI::COMM_WORLD.Isend(&msg, 1, MPI::INT, outgoingSynapses[id][target], COMMUNICATION_TAG);
+			outfirings++;
 		}
 		send_request.Wait(status);
 	}
@@ -83,8 +88,12 @@ WorkerSimulation::distributeOutgoingSpikes(const vector <unsigned>& output)
 		if (rank == worker && worker < workers-1) worker++;
 		else if (worker == workers) break;
 		MPI::COMM_WORLD.Recv(&buf, 1, MPI::INT, worker, COMMUNICATION_TAG, status);
-		if (buf > -1) incoming.push_back(buf);
-		else count++;worker++;
+		if (buf > -1) {
+			incoming.push_back(buf);
+		} else {
+			count++;
+			worker++;
+		}
 	}
 }
 
@@ -92,6 +101,23 @@ WorkerSimulation::distributeOutgoingSpikes(const vector <unsigned>& output)
 
 //-------------------------------------------------------------------------------------------------------------
 /* The initialisation of the network */
+
+void
+WorkerSimulation::receiveMapper()
+{
+	unsigned mapLength,totalNeurons;
+	MPI::COMM_WORLD.Recv(&totalNeurons, 1, MPI::INT, MASTER, TOTAL_NEURONS_TAG, status);
+	vector <string> mapSet;
+	mapSet.resize(workers-1);
+	for (unsigned worker = 0; worker < workers-1; ++worker) {
+		MPI::COMM_WORLD.Recv(&mapLength, 1, MPI::INT, MASTER, MAPPER_LENGTH_TAG, status);
+		char mapdata [mapLength];
+		MPI::COMM_WORLD.Recv(&mapdata, mapLength, MPI::CHAR, MASTER, MAPPER_DATA_TAG, status);
+		mapSet[worker] = string(mapdata);
+	}
+	mapper.set(mapSet,totalNeurons);
+}
+
 void
 WorkerSimulation::receiveConfiguration(nemo::Configuration& configuration)
 {
@@ -112,7 +138,7 @@ WorkerSimulation::receiveNeurons(nemo::Network* net)
 		char neuronData [neuronLength];
 		MPI::COMM_WORLD.Recv(&neuronData, neuronLength, MPI::CHAR, MASTER, NEURON_DATA_TAG, status);
 		float* params = decodeNeuron(neuronData);
-		net->addNeuron((unsigned)params[7], params[0], params[1], params[2], params[3], params[4], params[5], params[6]);
+		net->addNeuron(mapper.mapLocal((unsigned)params[7]), params[0], params[1], params[2], params[3], params[4], params[5], params[6]);
 	}
 	for (unsigned nidx = 0; nidx < neuronCount; ++nidx) {
 		pair <unsigned, float> p (nidx,0);
@@ -141,15 +167,14 @@ void
 WorkerSimulation::assignSynapse(nemo::Network* net, vector<string> synParams) {
 	float* result = new float [synParams.size()];
 	for (unsigned i = 0; i < synParams.size()-1; ++i) result[i] = ::atof(synParams[i].c_str());
-	if ((int) result[1] > 0 || ((int) result[1] == 0 && rank == 1)) {	
-		if ((int) result[0] > 0) 
-			net->addSynapse(mapLocal((unsigned) result[0]), mapLocal((unsigned) result[1]), (unsigned) result[2], result[3], (unsigned char)atoi(synParams[4].c_str()));
-		else if ((int) result[0] == 0 && rank == 1)
-			net->addSynapse((unsigned) result[0], mapLocal((unsigned) result[1]), (unsigned) result[2], result[3], (unsigned char)atoi(synParams[4].c_str()));
-		else
-			addIncomingSynapse(((int) result[0])*-1, mapLocal((unsigned) result[1]), (unsigned) result[2], result[3]);
+	if ((int) result[1] >= 0) {	
+		if ((int) result[0] >= 0) 
+			net->addSynapse(mapper.mapLocal((unsigned) result[0]), mapper.mapLocal((unsigned) result[1]), (unsigned) result[2], result[3], (unsigned char)atoi(synParams[4].c_str()));
+		else {
+			addIncomingSynapse((int)-(result[0]+1) , mapper.mapLocal((unsigned) result[1]), (unsigned) result[2], result[3]);
+		}
 	} else {
-		addOutgoingSynapse(mapLocal((unsigned) result[0]), (int) result[1]*-1);
+		addOutgoingSynapse(mapper.mapLocal((unsigned) result[0]), (int)-(result[1]+1));
 	}
 }
 
@@ -157,29 +182,27 @@ void
 WorkerSimulation::addIncomingSynapse(unsigned source, unsigned target, unsigned delay, float weight)
 {
 	unsigned i = 0;
+	inc_syn entry;
+	entry.target = target;
+	entry.delay = delay;
+	entry.weight = weight;
 	for (; i < incomingSynapses.size();++i) {
-		if (incomingSynapses[i][0][0] == source) break;
+		if (incomingSynapses[i].first == source) {
+			incomingSynapses[i].second.push_back(entry);
+		}
 	}
-	if (i < incomingSynapses.size()) {
-		float syn[] = {(float)target,weight};
-		std::vector<float> synv(syn, syn + sizeof(syn) / sizeof(float));
-		incomingSynapses[i].push_back(synv);
-	} else {
-		float src_f[] = {float(source), 0};
-		float trg_f[] = {float(target), delay, weight};
-		std::vector<float> src(src_f, src_f + sizeof(src_f) / sizeof(float));
-		std::vector<float> trg(trg_f, trg_f + sizeof(trg_f) / sizeof(float));
-		std::vector<std::vector<float> > n_src;
-		n_src.push_back(src);
-		n_src.push_back(trg);
-		incomingSynapses.push_back(n_src);
+	if (i >= incomingSynapses.size()) {
+		vector <inc_syn> vec;
+		vec.push_back(entry);
+		pair<unsigned,vector<inc_syn> > src_entry (source, vec);
+		incomingSynapses.push_back(src_entry);
 	}
 }
 
 void
 WorkerSimulation::addOutgoingSynapse(unsigned source, unsigned target)
 {
-	unsigned i = 0, targetRank = 1 + target/neuronCount;
+	unsigned i = 0, targetRank = mapper.rankOf(target);
 	if (outgoingSynapses[source].size() > 0) {
 		for (; i < outgoingSynapses[source].size();++i) {
 			if (outgoingSynapses[source][i] == targetRank) break;
@@ -188,22 +211,12 @@ WorkerSimulation::addOutgoingSynapse(unsigned source, unsigned target)
 	} else outgoingSynapses[source].push_back(targetRank);
 }
 
-unsigned
-WorkerSimulation::mapLocal(unsigned gidx) {
-	return gidx - (rank-1)*neuronCount;
-}
-
-unsigned
-WorkerSimulation::mapGlobal(unsigned lidx) {
-	return lidx + (rank-1)*neuronCount;
-}
-
-vector <vector <float> >
+vector <inc_syn>
 WorkerSimulation::getSynapseData(unsigned source)
 {
 	unsigned i = 0;
-	while ((unsigned) incomingSynapses[i][0][0] != source) i++;
-	return incomingSynapses[i];
+	while (incomingSynapses[i].first != source) i++;
+	return incomingSynapses[i].second;
 }
 
 	}
