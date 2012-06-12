@@ -21,7 +21,7 @@ MapperSim::MapperSim(const nemo::Network& net, unsigned workerCount) :
 	if (workers == 0) throw nemo::exception(NEMO_MPI_ERROR, "No worker nodes");
 	this->neuronMap = new vector<unsigned> [workers];
 	this->backMap.resize(neurons);
-	allocateNeurons(net);
+	allocateNeuronsUniform(net);
 }
 
 void
@@ -82,9 +82,8 @@ MapperSim::mapGlobal (unsigned lidx, unsigned rank)
 }
 
 void
-MapperSim::allocateNeurons(const nemo::Network& net)
+MapperSim::allocateNeuronsUniform(const nemo::Network& net)
 {
-	//unsigned matrix[neurons][neurons];
 	unsigned buf, neuronsPerWorker = neurons / workers;
 	unsigned lastNeurons = neuronsPerWorker + (neurons % workers);
 	for (unsigned worker = 0; worker < workers-1; ++worker) {
@@ -101,6 +100,12 @@ MapperSim::allocateNeurons(const nemo::Network& net)
 		neuronMap[workers-1][j] = j + offset;
 		backMap[j+offset] = j;
 	}
+}
+
+void
+MapperSim::allocateNeurons(const nemo::Network& net)
+{
+	//unsigned matrix [neurons][neurons];
 }
 
 	}

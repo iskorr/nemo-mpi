@@ -26,9 +26,9 @@ public:
 	std::vector <unsigned> retrieveNeurons(unsigned rank);
 	unsigned mapLocal(unsigned gidx);
 	unsigned mapGlobal(unsigned lidx, unsigned rank);
+	void allocateNeuronsUniform(const nemo::Network& net);
 	/* Cluster mapping */
 	void allocateNeurons(const nemo::Network& net);
-
 };
 	}
 }

@@ -88,7 +88,6 @@ main(int argc, char* argv[])
 	if (argc > 4) dmax = atoi(argv[4]);
 	unsigned rank = MPI::COMM_WORLD.Get_rank();
 	unsigned workers = MPI::COMM_WORLD.Get_size();
-	namespace po = boost::program_options;
 	if (rank == 0) {
 		nemo::Network* net(construct(neurons, synapses, dmax, false));
 		nemo::Configuration conf;

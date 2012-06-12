@@ -57,14 +57,21 @@ WorkerSimulation::runSimulation(nemo::Simulation* sim)
 void
 WorkerSimulation::enqueueIncomingSpikes(nemo::Simulation* sim, vector <pair<unsigned,float> >& stimulus)
 {
+	vector <inc_syn> synData;
 	while(!incoming.empty()) {
-		vector < inc_syn > synData = getSynapseData(incoming.front());
+		synData = getSynapseData(incoming.front());
 		for (unsigned i = 0; i < synData.size();++i) {
-			stimulus[synData[i].target].second += synData[i].weight;
-			spikes++;
+			delay_queue[synData[i].delay-1].push_back(pair<unsigned,float> (synData[i].target,synData[i].weight));
 		}
 		incoming.pop_front();
 	}
+	while (!delay_queue.empty() && !delay_queue[0].empty()) {
+		stimulus[delay_queue[0].front().first].second += delay_queue[0].front().second;
+		spikes++;
+		delay_queue[0].pop_front();
+	}
+	if (!delay_queue.empty()) delay_queue.pop_front();
+	delay_queue.resize(32);
 }
 
 void
@@ -75,7 +82,6 @@ WorkerSimulation::distributeOutgoingSpikes(const vector <unsigned>& output)
 	for(unsigned id = 0; id < output.size(); ++id) {
 		for (unsigned target = 0; target < outgoingSynapses[id].size(); ++target) {
 			msg = mapper.mapGlobal(output[id],rank);
-			//cout << "Sending spike from " << msg << " to node " << outgoingSynapses[id][target] << endl;
 			send_request = MPI::COMM_WORLD.Isend(&msg, 1, MPI::INT, outgoingSynapses[id][target], COMMUNICATION_TAG);
 			outfirings++;
 		}

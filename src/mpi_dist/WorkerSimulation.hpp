@@ -35,6 +35,7 @@ class WorkerSimulation {
 		std::vector <std::pair <unsigned, std::vector <inc_syn> > > incomingSynapses;
 		std::vector <std::pair <unsigned, float> > stim_template;
 		std::deque <int> incoming;
+		std::deque <std::deque <std::pair<unsigned, float> > > delay_queue;
 		
 		void receiveMapper();
 		void receiveConfiguration(nemo::Configuration& conf);
