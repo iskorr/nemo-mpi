@@ -12,7 +12,7 @@ class MasterSimulation {
 
 	public :
 		
-		MasterSimulation(const nemo::Network &net, const nemo::Configuration& conf, unsigned duration);
+		MasterSimulation(const nemo::Network &net, const nemo::Configuration& conf, unsigned duration, bool timed);
 		~MasterSimulation();
 
 	private :
@@ -24,7 +24,7 @@ class MasterSimulation {
 		void distributeNeurons(const nemo::Network& net, MapperSim& mapper);
 		void distributeSynapses(const nemo::network::NetworkImpl& net, const MapperSim& mapper);
 		float* getNeuronIdx(unsigned idx, const nemo::Network& net);
-		void simulate(unsigned duration);
+		void simulate(unsigned duration, bool timed);
 
 };
 

@@ -8,8 +8,7 @@
 #include <boost/random.hpp>
 #include <examples/common.hpp>
 #include <nemo.hpp>
-#include <mpi_dist/MasterSimulation.hpp>
-#include <mpi_dist/WorkerSimulation.hpp>
+#include <mpi_dist/SimulationMPI.hpp>
 using namespace std;
 
 typedef boost::mt19937 rng_t;
@@ -80,24 +79,19 @@ construct(unsigned ncount, unsigned scount, unsigned dmax, bool stdp)
 int
 main(int argc, char* argv[])
 {
-	unsigned neurons = 100, synapses = 50, duration = 1000, dmax = 1;
-	MPI::Init(argc, argv);
+	unsigned neurons = 100, synapses = 50, duration = 1000, dmax = 1, stdp = 0;
+	bool timed = true;
 	if (argc > 1) neurons = atoi(argv[1]);
 	if (argc > 2) synapses = atoi(argv[2]);
-	if (argc > 3) duration = atoi(argv[3]);
-	if (argc > 4) dmax = atoi(argv[4]);
-	unsigned rank = MPI::COMM_WORLD.Get_rank();
-	unsigned workers = MPI::COMM_WORLD.Get_size();
-	if (rank == 0) {
-		nemo::Network* net(construct(neurons, synapses, dmax, false));
-		nemo::Configuration conf;
-		conf.setWriteOnlySynapses();
-		conf.enableLogging();
-		conf.setCpuBackend();
-		nemo::mpi_dist::MasterSimulation(*net,conf, duration);
-	} else {
-		nemo::mpi_dist::WorkerSimulation(rank, workers);
-	}
-	MPI::Finalize();
+	if (argc > 3) timed = atoi(argv[3]) != 0;
+	if (argc > 4) duration = atoi(argv[4]);
+	if (argc > 5) dmax = atoi(argv[5]);
+	if (argc > 6) stdp = atoi(argv[6]);
+	nemo::Network* net(construct(neurons, synapses, dmax, stdp != 0));
+	nemo::Configuration conf;
+	conf.setWriteOnlySynapses();
+	conf.enableLogging();
+	conf.setCpuBackend();
+	nemo::mpi_dist::SimulationMPI(net, conf, argc, argv, duration, timed);
 	return 0;
 }

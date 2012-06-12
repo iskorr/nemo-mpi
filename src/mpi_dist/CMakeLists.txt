@@ -12,8 +12,9 @@ INCLUDE_DIRECTORIES(
 
 ADD_LIBRARY(nemo_mpi_dist
 	MasterSimulation.cpp
-	WorkerSimulation.cpp
 	MapperSim.cpp
+	SimulationMPI.cpp
+	WorkerSimulation.cpp
 	parsing.cpp
 )
 
@@ -26,7 +27,8 @@ TARGET_LINK_LIBRARIES(nemo_mpi_dist nemo ${LTDL_LIBRARY} ${Boost_LIBRARIES})
 SET(BUILD_SHARED_LIBS TRUE)
 INSTALL(FILES
 	MasterSimulation.cpp
-	WorkerSimulation.cpp
 	MapperSim.cpp
+	SimulationMPI.cpp
+	WorkerSimulation.cpp
 	DESTINATION ${INSTALL_INCLUDE_DIR}/mpi_dist
 )

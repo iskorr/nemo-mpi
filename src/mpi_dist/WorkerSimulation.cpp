@@ -15,7 +15,7 @@ namespace nemo {
 WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workerCount) :
 						mapper(workerCount-1), rank(rank),  workers(workerCount)
 {
-	outfirings = 0, spikes = 0;
+	outfirings = 0, spikes = 0, spikesPerStep = 0;
 	nemo::Network* net = new nemo::Network();
 	nemo::Configuration conf;
 	receiveMapper();
@@ -40,13 +40,14 @@ WorkerSimulation::~WorkerSimulation()
 void
 WorkerSimulation::runSimulation(nemo::Simulation* sim)
 {
-	unsigned stepOK, stepDONE=1;
+	unsigned stepOK;
 	MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
 	while(stepOK == 0) {
 		vector <pair<unsigned,float> > stim (stim_template);
 		enqueueIncomingSpikes(sim, stim);
 		distributeOutgoingSpikes(sim->step(stim));
-		MPI::COMM_WORLD.Send(&stepDONE, 1, MPI::INT, MASTER, SIM_STEP);
+		MPI::COMM_WORLD.Send(&spikesPerStep, 1, MPI::INT, MASTER, SIM_STEP);
+		spikesPerStep = 0;
 		MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
 	}
 	MPI::COMM_WORLD.Send(&outfirings, 1, MPI::INT, MASTER, FIRINGS);
@@ -63,6 +64,7 @@ WorkerSimulation::enqueueIncomingSpikes(nemo::Simulation* sim, vector <pair<unsi
 		for (unsigned i = 0; i < synData.size();++i) {
 			delay_queue[synData[i].delay-1].push_back(pair<unsigned,float> (synData[i].target,synData[i].weight));
 		}
+		spikesPerStep++;
 		incoming.pop_front();
 	}
 	while (!delay_queue.empty() && !delay_queue[0].empty()) {
