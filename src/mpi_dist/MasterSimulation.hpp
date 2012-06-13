@@ -12,19 +12,19 @@ class MasterSimulation {
 
 	public :
 		
-		MasterSimulation(const nemo::Network &net, const nemo::Configuration& conf, unsigned duration, bool timed);
+		MasterSimulation(const nemo::Network &net, const nemo::Configuration& conf, unsigned duration, bool timed, const std::string& filename);
 		~MasterSimulation();
 
 	private :
 
 		MPI::Status status;
-		unsigned workers;
+		unsigned workers, neuronCount;
 		void distributeMapper(nemo::mpi_dist::MapperSim& mapper);
 		void distributeConfiguration(const nemo::Configuration& conf);
 		void distributeNeurons(const nemo::Network& net, MapperSim& mapper);
 		void distributeSynapses(const nemo::network::NetworkImpl& net, const MapperSim& mapper);
 		float* getNeuronIdx(unsigned idx, const nemo::Network& net);
-		void simulate(unsigned duration, bool timed);
+		void simulate(unsigned duration, bool timed, const std::string& filename);
 
 };
 

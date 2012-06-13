@@ -13,9 +13,10 @@ using namespace std;
 namespace nemo {
 	namespace mpi_dist {
 
-MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configuration& conf, unsigned duration, bool timed)
+MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configuration& conf, unsigned duration, bool timed, const string& filename) : 
+																				workers(MPI::COMM_WORLD.Get_size()),
+																				neuronCount(net.neuronCount())
 {
-	workers = MPI::COMM_WORLD.Get_size();
 	unsigned ok, worker = 1;
 	MapperSim mapper(net, workers-1);
 	
@@ -33,7 +34,7 @@ MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configu
 	if (worker >= workers-1) cout << "All the workers are set up for simulation" << endl;
 	else cout << "There is a problem with a worker " << worker << endl;
 	MPI_Barrier(MPI_COMM_WORLD);
-	simulate(duration, timed);
+	simulate(duration, timed, filename);
 }
 
 MasterSimulation::~MasterSimulation()
@@ -148,16 +149,16 @@ MasterSimulation::getNeuronIdx(unsigned idx, const nemo::Network& net)
 }
 
 void
-MasterSimulation::simulate(unsigned duration, bool timed)
+MasterSimulation::simulate(unsigned duration, bool timed, const string& filename)
 {
 	cout << "Simulation started" << endl;
 	unsigned stepOK = 0, stepDONE, firingPerStep;
 	unsigned long runtime = 0;
 	nemo::Timer timer;
-	ofstream out ("data.txt");
-  	if (out.is_open()) out << "Step   Spikes" << endl;
-	timer.reset();
+	ofstream out (filename.c_str(), fstream::app);
+  	//if (out.is_open()) out << "Step Spikes" << endl;
 	if (timed) {
+		timer.reset();
 		while(timer.elapsedWallclock() < duration) {
 			MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
 			firingPerStep = 0;
@@ -165,10 +166,12 @@ MasterSimulation::simulate(unsigned duration, bool timed)
 				MPI::COMM_WORLD.Recv(&stepDONE, 1, MPI::INT, worker, SIM_STEP, status);
 				firingPerStep += stepDONE;
 			}
-			out << timer.elapsedSimulation() << " " << firingPerStep << endl;
+			//out << timer.elapsedSimulation() << " " << firingPerStep << endl;
 			timer.step();
 		}
+		runtime = timer.elapsedWallclock();
 	} else {
+		timer.reset();
 		while(timer.elapsedSimulation() < duration) {
 			MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
 			firingPerStep = 0;
@@ -176,12 +179,11 @@ MasterSimulation::simulate(unsigned duration, bool timed)
 				MPI::COMM_WORLD.Recv(&stepDONE, 1, MPI::INT, worker, SIM_STEP, status);
 				firingPerStep += stepDONE;
 			}
-			out << timer.elapsedSimulation() << " " << firingPerStep << endl;
+			//out << timer.elapsedSimulation() << " " << firingPerStep << endl;
 			timer.step();
 		}
 		runtime = timer.elapsedWallclock();
 	}
-	out.close();
 	stepOK = 1;
 	MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
 	unsigned totalfirings=0,totalspikes=0,buf;
@@ -190,6 +192,10 @@ MasterSimulation::simulate(unsigned duration, bool timed)
 		totalfirings+= buf;
 		MPI::COMM_WORLD.Recv(&buf, 1, MPI::INT, worker, SPIKES, status);
 		totalspikes+= buf;
+	}
+	if (out.is_open()) {
+		out << neuronCount << " " << totalfirings << " " << runtime << endl;
+		out.close();
 	}
 	if (timed) cout << "Total # of steps succeded: " << timer.elapsedSimulation() << endl;
 	else cout << "Runnning time of the simulation: " << runtime << endl;

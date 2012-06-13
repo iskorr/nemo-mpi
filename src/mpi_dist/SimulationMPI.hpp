@@ -8,7 +8,7 @@ namespace nemo {
 
 class SimulationMPI {
 public:
-	SimulationMPI(const nemo::Network *net, const nemo::Configuration& conf, int argc, char* argv [], unsigned duration, bool timed);
+	SimulationMPI(const nemo::Network *net, const nemo::Configuration& conf, int argc, char* argv [], unsigned duration, bool timed, const std::string& file);
 	~SimulationMPI();
 };
 

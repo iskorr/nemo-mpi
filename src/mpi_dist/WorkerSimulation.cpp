@@ -13,9 +13,16 @@ namespace nemo {
 	namespace mpi_dist {
 
 WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workerCount) :
-						mapper(workerCount-1), rank(rank),  workers(workerCount)
+														mapper(workerCount-1),
+														rank(rank),
+														reply(1),
+														workers(workerCount),
+														fired(0),
+														spikes(0),
+														spikesPerStep(0),
+														firedPerStep(0)
 {
-	outfirings = 0, spikes = 0, spikesPerStep = 0;
+	;
 	nemo::Network* net = new nemo::Network();
 	nemo::Configuration conf;
 	receiveMapper();
@@ -46,14 +53,17 @@ WorkerSimulation::runSimulation(nemo::Simulation* sim)
 		vector <pair<unsigned,float> > stim (stim_template);
 		enqueueIncomingSpikes(sim, stim);
 		distributeOutgoingSpikes(sim->step(stim));
-		MPI::COMM_WORLD.Send(&spikesPerStep, 1, MPI::INT, MASTER, SIM_STEP);
-		spikesPerStep = 0;
+		MPI::COMM_WORLD.Send(&firedPerStep, 1, MPI::INT, MASTER, SIM_STEP);
+		firedPerStep = 0, spikesPerStep = 0;
 		MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
 	}
-	MPI::COMM_WORLD.Send(&outfirings, 1, MPI::INT, MASTER, FIRINGS);
+	MPI::COMM_WORLD.Send(&fired, 1, MPI::INT, MASTER, FIRINGS);
 	MPI::COMM_WORLD.Send(&spikes, 1, MPI::INT, MASTER, SPIKES);
 }
 
+
+//------------------------------------------------------------------------------------------------------------
+/* Step functions */
 
 void
 WorkerSimulation::enqueueIncomingSpikes(nemo::Simulation* sim, vector <pair<unsigned,float> >& stimulus)
@@ -69,10 +79,10 @@ WorkerSimulation::enqueueIncomingSpikes(nemo::Simulation* sim, vector <pair<unsi
 	}
 	if (!delay_queue.empty()) {
 		deque <pair<unsigned, float> > slot = delay_queue.front();
+		spikesPerStep = slot.size();
+		spikes += spikesPerStep;
 		while (!slot.empty()) {
 			stimulus[slot.front().first].second += slot.front().second;
-			spikes++;
-			spikesPerStep++;
 			slot.pop_front();
 		}
 		delay_queue.pop_front();
@@ -83,6 +93,8 @@ WorkerSimulation::enqueueIncomingSpikes(nemo::Simulation* sim, vector <pair<unsi
 void
 WorkerSimulation::distributeOutgoingSpikes(const vector <unsigned>& output)
 {
+	firedPerStep = output.size();
+	fired += firedPerStep;
 	unsigned msg,count = 0;
 	int buf;
 	for(unsigned id = 0; id < output.size(); ++id) {
@@ -91,7 +103,6 @@ WorkerSimulation::distributeOutgoingSpikes(const vector <unsigned>& output)
 			msg = mapper.mapGlobal(fired,rank);
 			send_request = MPI::COMM_WORLD.Isend(&msg, 1, MPI::INT, outgoingSynapses[fired][target], COMMUNICATION_TAG);
 		}
-		outfirings++;
 		send_request.Wait(status);
 	}
 	msg = -1;

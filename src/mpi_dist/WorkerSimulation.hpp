@@ -30,7 +30,7 @@ class WorkerSimulation {
 		MPI::Status status;
 		MPI::Request recv_request, send_request;
 		MapperSim mapper;
-		unsigned rank, reply, neuronCount, workers, outfirings, spikes, spikesPerStep;
+		unsigned rank, reply, neuronCount, workers, fired, spikes, spikesPerStep, firedPerStep;
 		std::vector <std::vector <unsigned> > outgoingSynapses;
 		std::vector <std::pair <unsigned, std::vector <inc_syn> > > incomingSynapses;
 		std::vector <std::pair <unsigned, float> > stim_template;

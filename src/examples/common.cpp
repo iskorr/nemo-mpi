@@ -131,8 +131,8 @@ simulate(nemo::Simulation* sim, unsigned time_ms, unsigned stdp, std::ostream& o
 		const std::vector<unsigned>& fired = sim->step();
 		for(std::vector<unsigned>::const_iterator fi = fired.begin(); fi != fired.end(); ++fi) {
 			out << ms << " " << *fi << "\n";
-			res++;
 		}
+		res += fired.size();
 		ms += 1;
 		if(stdp != 0 && ms % stdp == 0) {
 			sim->applyStdp(1.0);

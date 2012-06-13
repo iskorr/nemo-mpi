@@ -81,17 +81,19 @@ main(int argc, char* argv[])
 {
 	unsigned neurons = 100, synapses = 50, duration = 1000, dmax = 1, stdp = 0;
 	bool timed = true;
+	string filename = "default.txt";
 	if (argc > 1) neurons = atoi(argv[1]);
 	if (argc > 2) synapses = atoi(argv[2]);
 	if (argc > 3) timed = atoi(argv[3]) != 0;
 	if (argc > 4) duration = atoi(argv[4]);
 	if (argc > 5) dmax = atoi(argv[5]);
 	if (argc > 6) stdp = atoi(argv[6]);
+	if (argc > 7) filename = string(argv[7]);
 	nemo::Network* net(construct(neurons, synapses, dmax, stdp != 0));
 	nemo::Configuration conf;
 	conf.setWriteOnlySynapses();
 	conf.enableLogging();
 	conf.setCpuBackend();
-	nemo::mpi_dist::SimulationMPI(net, conf, argc, argv, duration, timed);
+	nemo::mpi_dist::SimulationMPI(net, conf, argc, argv, duration, timed, filename);
 	return 0;
 }
