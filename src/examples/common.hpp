@@ -31,7 +31,7 @@ long benchmark(nemo::Simulation* sim, unsigned n, unsigned m,
  * \param stdp
  * 		Period (in ms) between STDP applications. If 0, run without STDP.
  */
-void
+unsigned
 simulate(nemo::Simulation* sim, unsigned time_ms, unsigned stdp=0, std::ostream& out=std::cout);
 
 

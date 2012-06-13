@@ -123,10 +123,11 @@ main(int argc, char* argv[])
 
 		std::ofstream output(file.c_str(),std::fstream::app);
 
-		if(vm.count("output-file")) {
+
+/*		if(vm.count("output-file")) {
 			filename = vm["output-file"].as<std::string>();
 			file.open(filename.c_str()); // closes on destructor
-		}
+		}*/
 
 		std::ostream out(0);
 
