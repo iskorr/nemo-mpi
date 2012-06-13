@@ -62,17 +62,21 @@ WorkerSimulation::enqueueIncomingSpikes(nemo::Simulation* sim, vector <pair<unsi
 	while(!incoming.empty()) {
 		synData = getSynapseData(incoming.front());
 		for (unsigned i = 0; i < synData.size();++i) {
-			delay_queue[synData[i].delay-1].push_back(pair<unsigned,float> (synData[i].target,synData[i].weight));
+			pair<unsigned,float> entry(synData[i].target,synData[i].weight);
+			delay_queue[synData[i].delay-1].push_back(entry);
 		}
-		spikesPerStep++;
 		incoming.pop_front();
 	}
-	while (!delay_queue.empty() && !delay_queue[0].empty()) {
-		stimulus[delay_queue[0].front().first].second += delay_queue[0].front().second;
-		spikes++;
-		delay_queue[0].pop_front();
+	if (!delay_queue.empty()) {
+		deque <pair<unsigned, float> > slot = delay_queue.front();
+		while (!slot.empty()) {
+			stimulus[slot.front().first].second += slot.front().second;
+			spikes++;
+			spikesPerStep++;
+			slot.pop_front();
+		}
+		delay_queue.pop_front();
 	}
-	if (!delay_queue.empty()) delay_queue.pop_front();
 	delay_queue.resize(32);
 }
 
@@ -82,11 +86,12 @@ WorkerSimulation::distributeOutgoingSpikes(const vector <unsigned>& output)
 	unsigned msg,count = 0;
 	int buf;
 	for(unsigned id = 0; id < output.size(); ++id) {
-		for (unsigned target = 0; target < outgoingSynapses[id].size(); ++target) {
-			msg = mapper.mapGlobal(output[id],rank);
-			send_request = MPI::COMM_WORLD.Isend(&msg, 1, MPI::INT, outgoingSynapses[id][target], COMMUNICATION_TAG);
-			outfirings++;
+		unsigned fired = output[id];
+		for (unsigned target = 0; target < outgoingSynapses[fired].size(); ++target) {
+			msg = mapper.mapGlobal(fired,rank);
+			send_request = MPI::COMM_WORLD.Isend(&msg, 1, MPI::INT, outgoingSynapses[fired][target], COMMUNICATION_TAG);
 		}
+		outfirings++;
 		send_request.Wait(status);
 	}
 	msg = -1;
@@ -190,6 +195,7 @@ void
 WorkerSimulation::addIncomingSynapse(unsigned source, unsigned target, unsigned delay, float weight)
 {
 	unsigned i = 0;
+	bool found = false;
 	inc_syn entry;
 	entry.target = target;
 	entry.delay = delay;
@@ -197,9 +203,11 @@ WorkerSimulation::addIncomingSynapse(unsigned source, unsigned target, unsigned 
 	for (; i < incomingSynapses.size();++i) {
 		if (incomingSynapses[i].first == source) {
 			incomingSynapses[i].second.push_back(entry);
+			found = true;
+			break;
 		}
 	}
-	if (i >= incomingSynapses.size()) {
+	if (!found) {
 		vector <inc_syn> vec;
 		vec.push_back(entry);
 		pair<unsigned,vector<inc_syn> > src_entry (source, vec);
@@ -210,21 +218,24 @@ WorkerSimulation::addIncomingSynapse(unsigned source, unsigned target, unsigned 
 void
 WorkerSimulation::addOutgoingSynapse(unsigned source, unsigned target)
 {
-	unsigned i = 0, targetRank = mapper.rankOf(target);
-	if (outgoingSynapses[source].size() > 0) {
-		for (; i < outgoingSynapses[source].size();++i) {
-			if (outgoingSynapses[source][i] == targetRank) break;
+	unsigned targetRank = mapper.rankOf(target);
+	bool found = false;
+	for (unsigned i = 0; i < outgoingSynapses[source].size();++i) {
+		if (outgoingSynapses[source][i] == targetRank) {
+			found = true;
 		}
-		if (i > outgoingSynapses[source].size()-1) outgoingSynapses[source].push_back(targetRank);
-	} else outgoingSynapses[source].push_back(targetRank);
+	}
+	if (!found) outgoingSynapses[source].push_back(targetRank);
 }
 
 vector <inc_syn>
 WorkerSimulation::getSynapseData(unsigned source)
 {
 	unsigned i = 0;
-	while (incomingSynapses[i].first != source) i++;
-	return incomingSynapses[i].second;
+	for (;i < incomingSynapses.size(); ++i) {
+		if (incomingSynapses[i].first == source) return incomingSynapses[i].second;
+	}
+	return vector <inc_syn>();
 }
 
 	}

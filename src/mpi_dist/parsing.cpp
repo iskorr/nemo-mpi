@@ -39,7 +39,13 @@ encodeConfiguration(const nemo::Configuration &conf)
 	const char* description = conf.backendDescription();
 	ostringstream input;
 	input << logging << "<>" << fract_bits << "<>" << cuda_part_size << "<>" << backend << "<>" << description;
-	//input << encodeSTDP(*conf.m_impl->stdpFunction());
+	boost::optional<nemo::StdpFunction> stdp;
+	try {
+	//	stdp = *conf.m_impl->stdpFunction();
+	} catch (...) {
+	}
+	if (stdp) input << encodeSTDP(*conf.m_impl->stdpFunction());
+	else input << "<>NULL";
 	string neuronData(input.str());
 	return neuronData;
 }
@@ -54,9 +60,9 @@ decodeConfiguration(nemo::Configuration &target, const string& confData)
 	else target.disableLogging();
 	target.m_impl->setFractionalBits(result[1]);
 	target.m_impl->setCudaPartitionSize(result[2]);
-/*	if (properties[properties.size()-1].compare("NULL") != 0) {
+	if (properties[properties.size()-1].compare("NULL") != 0) {
 		decodeSTDP(target,properties[properties.size()-1]);
-	}*/
+	}
 }
 
 string
