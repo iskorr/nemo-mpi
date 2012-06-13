@@ -152,11 +152,11 @@ MasterSimulation::simulate(unsigned duration, bool timed)
 {
 	cout << "Simulation started" << endl;
 	unsigned stepOK = 0, stepDONE, firingPerStep;
-	unsigned long runtime;
+	unsigned long runtime = 0;
 	nemo::Timer timer;
-	timer.reset();
 	ofstream out ("data.txt");
   	if (out.is_open()) out << "Step   Spikes" << endl;
+	timer.reset();
 	if (timed) {
 		while(timer.elapsedWallclock() < duration) {
 			MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);

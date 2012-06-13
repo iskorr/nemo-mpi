@@ -118,15 +118,15 @@ main(int argc, char* argv[])
 		unsigned dmax = vm["dmax"].as<unsigned>();
 		unsigned duration = 10000; //vm["duration"].as<unsigned>();
 		unsigned stdp = vm["stdp-period"].as<unsigned>();
-		unsigned verbose = 0;//vm["verbose"].as<unsigned>();
+		unsigned verbose = vm["verbose"].as<unsigned>();
 		bool runBenchmark = vm.count("benchmark") != 0;
 
 		std::ofstream output(file.c_str(),std::fstream::app);
 
-/*		if(vm.count("output-file")) {
+		if(vm.count("output-file")) {
 			filename = vm["output-file"].as<std::string>();
 			file.open(filename.c_str()); // closes on destructor
-		}*/
+		}
 
 		std::ostream out(0);
 
