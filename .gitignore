@@ -1,14 +1,6 @@
 # Ignoring the build files
 build/*
 
-# Ignoring report-related generated files
-report.aux
-report.bbl
-report.blg
-report.log
-report.pdf
-report.toc
-
 # Ignoring all the files being modified
 *~
 
