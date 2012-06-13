@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.5.24)  31 MAY 2012 18:02
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.5.24)  13 JUN 2012 19:12
 entering extended mode
  %&-line parsing enabled.
 **report.tex
@@ -179,77 +179,4 @@ File: images/spiking-model.png Graphic file (type png)
 
 <use images/spiking-model.png> [5 <./images/neuron_model.png> <./images/spiking
 -model.png>]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 56.
- (/usr/share/texmf-texlive/tex/latex/base/omscmr.fd
-File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
-)
-LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 56.
- [6]
-<images/topology.png, id=41, 468.75125pt x 326.21875pt>
-File: images/topology.png Graphic file (type png)
-
-<use images/topology.png> [7 <./images/topology.png>] [8] [9] [10])
-(./3_objectives.tex [11]
- 3.
-) (./4_design.tex [12
-
-]
- 4.
-) (./5_improvements.tex [13
-
-]
- 5.
-) (./6_evaluation.tex [14
-
-]
- 6.
-) (./7_conclusion.tex [15
-
-]
- 7.
-) [16
-
-] (./report.bbl
-Missing character: There is no â in font cmr12!
-Missing character: There is no € in font cmr12!
-Missing character: There is no “ in font cmr12!
-Missing character: There is no â in font cmr12!
-Missing character: There is no € in font cmr12!
-Missing character: There is no “ in font cmr12!
-
-Underfull \hbox (badness 10000) in paragraph at lines 64--66
-[]\OT1/cmr/m/n/12 http://www.scholarpedia.org/article/Adaptive[]exponential[]in
-tegrate-and
- []
-
-[17
-
-
-]
-Missing character: There is no â in font cmr12!
-Missing character: There is no € in font cmr12!
-Missing character: There is no “ in font cmr12!
-) [18] (./report.aux) ) 
-Here is how much of TeX's memory you used:
- 2668 strings out of 493848
- 36059 string characters out of 1152823
- 93028 words of memory out of 3000000
- 5924 multiletter control sequences out of 15000+50000
- 10108 words of font info for 35 fonts, out of 3000000 for 9000
- 714 hyphenation exceptions out of 8191
- 26i,7n,32p,310b,242s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm
-/cmbx12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi12.pfb
-></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share
-/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-texli
-ve/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-texlive/fonts/typ
-e1/public/amsfonts/cm/cmr17.pfb></usr/share/texmf-texlive/fonts/type1/public/am
-sfonts/cm/cmr8.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cms
-y10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmti12.pfb>
-Output written on report.pdf (20 pages, 245036 bytes).
-PDF statistics:
- 110 PDF objects out of 1000 (max. 8388607)
- 0 named destinations out of 1000 (max. 500000)
- 16 words of extra memory for PDF output out of 10000 (max. 10000000)
-
+LaTeX Font Info:    Try loading 

@@ -7,15 +7,13 @@
 
 #include <vector>
 
-#ifdef USING_MAIN
-#	include <string>
-#	include <iostream>
-#	include <fstream>
-#	include <boost/program_options.hpp>
-#	include <boost/scoped_ptr.hpp>
-#	include <examples/common.hpp>
-#endif
-
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <boost/program_options.hpp>
+#include <boost/scoped_ptr.hpp>
+#include <examples/common.hpp>
+#include <time.h>
 #include <boost/random.hpp>
 #include <nemo.hpp>
 
@@ -101,7 +99,8 @@ int
 main(int argc, char* argv[])
 {
 	namespace po = boost::program_options;
-
+	char* name;
+	if (argc > 2) name = argv[1];
 	try {
 
 		po::options_description desc = commonOptions();
@@ -112,24 +111,24 @@ main(int argc, char* argv[])
 		;
 
 		po::variables_map vm = processOptions(argc, argv, desc);
-
+		
+		std::string file(name);
 		unsigned ncount = vm["neurons"].as<unsigned>();
 		unsigned scount = vm["synapses"].as<unsigned>();
 		unsigned dmax = vm["dmax"].as<unsigned>();
-		unsigned duration = 1000; //vm["duration"].as<unsigned>();
+		unsigned duration = 10000; //vm["duration"].as<unsigned>();
 		unsigned stdp = vm["stdp-period"].as<unsigned>();
-		unsigned verbose = 1;//vm["verbose"].as<unsigned>();
+		unsigned verbose = 0;//vm["verbose"].as<unsigned>();
 		bool runBenchmark = vm.count("benchmark") != 0;
 
-		std::ofstream file;
-		std::string filename;
+		std::ofstream output(file.c_str(),std::fstream::app);
 
-		if(vm.count("output-file")) {
+/*		if(vm.count("output-file")) {
 			filename = vm["output-file"].as<std::string>();
 			file.open(filename.c_str()); // closes on destructor
-		}
+		}*/
 
-		std::ostream& out = filename.empty() ? std::cout : file;
+		std::ostream out(0);
 
 		LOG(verbose, "Constructing network");
 		boost::scoped_ptr<nemo::Network> net(nemo::random::construct(ncount, scount, dmax, stdp != 0));
@@ -142,7 +141,13 @@ main(int argc, char* argv[])
 		if(runBenchmark) {
 			benchmark(sim.get(), ncount, scount, vm);
 		} else {
-			simulate(sim.get(), duration, stdp, out);
+			unsigned long start = time(NULL);
+			unsigned res = simulate(sim.get(), duration, stdp, out);
+			unsigned long simtime = time(NULL) - start;
+			if (output.is_open()) {
+				output << ncount << " " << simtime << " " << res << std::endl;
+				output.close();
+			}
 		}
 		LOG(verbose, "Simulation complete");
 		return 0;
