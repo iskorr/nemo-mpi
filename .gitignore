@@ -2,12 +2,12 @@
 build/*
 
 # Ignoring report-related generated files
-interim_report.aux
-interim_report.bbl
-interim_report.blg
-interim_report.log
-interim_report.pdf
-interim_report.toc
+report.aux
+report.bbl
+report.blg
+report.log
+report.pdf
+report.toc
 
 # Ignoring all the files being modified
 *~
