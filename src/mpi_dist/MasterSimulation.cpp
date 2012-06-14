@@ -158,7 +158,8 @@ MasterSimulation::simulate(unsigned duration, bool timed, const string& filename
 	unsigned stepOK = 0, stepDONE, firingPerStep;
 	unsigned long runtime = 0;
 	nemo::Timer timer;
-	ofstream out(filename.c_str(), fstream::app);
+	ofstream out(filename.c_str(),fstream::app);
+  	//out.open(filename.c_str(),fstream::app);
 	if (timed) {
 		timer.reset();
 		while(timer.elapsedWallclock() < duration) {
@@ -186,6 +187,7 @@ MasterSimulation::simulate(unsigned duration, bool timed, const string& filename
 		}
 		runtime = timer.elapsedWallclock();
 	}
+	//out.close();
 	stepOK = 1;
 	MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
 	unsigned totalfirings=0,totalspikes=0,buf;
@@ -205,6 +207,7 @@ MasterSimulation::simulate(unsigned duration, bool timed, const string& filename
 		cout << "Total # of inter-nodal firings: " << totalfirings << endl;
 		cout << "Total # of spikes delivered: " << totalspikes << endl;
 	}
+
 }
 	}
 }
