@@ -142,9 +142,11 @@ main(int argc, char* argv[])
 		if(runBenchmark) {
 			benchmark(sim.get(), ncount, scount, vm);
 		} else {
-			unsigned long simtime = simulate(sim.get(), duration, stdp, output);
+			unsigned long start = time(NULL);
+			simulate(sim.get(), duration, stdp, output);
+			start  = time(NULL) - start;
 			if (output.is_open()) {
-				output << ncount << " " << simtime << std::endl;
+				output << ncount << " " << start << std::endl;
 				output.close();
 			}
 		}

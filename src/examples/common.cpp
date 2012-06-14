@@ -123,10 +123,9 @@ benchmark(nemo::Simulation* sim, unsigned n, unsigned m,
 
 
 
-unsigned long
+void
 simulate(nemo::Simulation* sim, unsigned time_ms, unsigned stdp, std::ostream& out)
 {
-	unsigned long start = time(NULL);
 	for(unsigned ms=0; ms<time_ms; ) {
 		const std::vector<unsigned>& fired = sim->step();
 		/*for(std::vector<unsigned>::const_iterator fi = fired.begin(); fi != fired.end(); ++fi) {
@@ -137,8 +136,6 @@ simulate(nemo::Simulation* sim, unsigned time_ms, unsigned stdp, std::ostream& o
 			sim->applyStdp(1.0);
 		}
 	}
-	unsigned long simtime = time(NULL) - start;
-	return simtime;
 }
 
 
