@@ -8,6 +8,7 @@
 \usepackage{url}
 \usepackage[english]{babel}
 \usepackage{wrapfig}
+\usepackage[toc,page]{appendix}
 \setlength{\parskip}{0.3cm}
 \setlength{\parindent}{0cm}
 
@@ -49,19 +50,30 @@ I would like to thank...
 
 \input{2_background}
 
-\input{3_objectives}
+\input{3_design}
 
-\input{4_design}
+\input{4_implementation}
 
-\input{5_improvements}
+\input{5_evaluation}
 
-\input{6_evaluation}
-
-\input{7_conclusion}
+\input{6_conclusion}
 
 \clearpage
 
 \bibliographystyle{plain}
 \bibliography{myrefs}
+
+\begin{appendices}
+
+\chapter{Simulation Classes}
+\section{MasterSimulation}
+\section{WorkerSimulation}
+
+\chapter{Full Mapper Implementation}
+
+\chapter{Performance Comparison Graphs}
+
+
+\end{appendices}
 
 \end{document}

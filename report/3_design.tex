@@ -1,0 +1,39 @@
+\chapter{Objectives and Design}
+
+This chapter will provide the overview of the goals set by the project, design implementation aimed to meet those and certain properties of the problem that affected the solution.
+It will also cover design paradigms used for project guidance, as well as, the set of tools used for outlining its aspects.
+
+\section{Main Objectives}
+
+Throughout the course of project, the main aims that were targeted had been:
+
+\begin{itemize}
+\item {\textbf{Create a distributed version of NeMo, making it capable of scalable simulations with the use of multiple processes}}
+\item {\textbf{Lower the requirements set by the platform for the target machine(s) through parallelization}}
+\item {\textbf{Implement clustering algorithm that would allow the resulting program to operate within the network capacity and distribute the workload in a more efficient manner}}
+\item {\textbf{Throughout implementation of the distributed capabilities, leave the core NeMo functionality intact - build on top}}
+\end{itemize}
+
+Setting out the objectives this way helped to percieve a more detailed picture of the project as a whole and gave understanding of the set of stages that were to be accomplished in order to
+
+\section{Objective-specific Structure}
+
+\subsection{Design Criteria}
+
+\subsection{Initial Proposal}
+
+\subsection{Problems}
+\begin{itemize}
+
+\item {Latency and Spike delivery}
+
+Due to latency within the network of processors the system was tested on, there were a few precedents of race conditions that caused uncertain behaviour of the simulator - therefore, giving output that differed significantly from the desired one. In order to overcome this drawback, a timer system within the master simulation has been implemented - this ensured control of the communications, and allowed for stops with delay, to deal with propagating spikes. That move has significantly increased precision of the simulation, moreover, giving a better overview of the performance.
+
+\item {}
+
+\end{itemize}
+
+
+\section{Final Design}
+
+\section{Tools}

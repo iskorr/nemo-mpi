@@ -194,6 +194,15 @@
   timestamp = {2012.01.25}
 }
 
+@BOOK{KochSegevModeling,
+  title = {Methods in Neuronal Modeling : From Ions to Networks},
+  publisher = {MIT Press},
+  year = {1998},
+  author = {Christof Koch and Idan Segev},
+  owner = {isk3nd3r},
+  timestamp = {2012.06.14}
+}
+
 @BOOK{Kumar2002,
   title = {Introduction to Parallel Computing},
   publisher = {Addison-Wesley Longman Publishing Co., Inc.},
@@ -397,13 +406,5 @@
   author = {Wulfram Gerstner, Werner Kistler},
   owner = {io1009},
   timestamp = {2012.02.10}
-}
-
-@BOOK{,
-  title = {Methods in Neuronal Modeling : From Ions to Networks},
-  publisher = {MIT Press},
-  year = {1998},
-  owner = {isk3nd3r},
-  timestamp = {2012.06.14}
 }
 

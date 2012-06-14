@@ -1,5 +1,7 @@
 \chapter{Background}
 
+This chapter will outline the information needed for better understanding of the idea of the project and its underlying processes.
+
 \section{Spiking Neural Networks}
 
 An \emph{artificial neural network}(ANN) is defined as a computational model inspired by the structure and functional aspects of biological neural networks.\cite{ActFunc}
@@ -58,25 +60,50 @@ biological neuron behaviour. Here are some of them.
 
 \emph{Integrate and Fire}(IF) model is a simple and relatively accurate representation of the actual biological neuron.
 It divides the behaviour of membrane potential into two parts: long periods of \emph{integration} and short firing of \emph{spikes}. The activation function for this kind of neurons is
-a time derivative of the law of capacitance, with a refactoring time added to limit the speed of firing: \begin{math}f(I) = \frac{I}{C_{m}V_{th} + t_{ref}I}\end{math}.
-Therefore, the rate of firing is directly proportional to the input current.\cite{WulframGerstner2002}
+a time derivative of the law of capacitance, with a refactoring time added to limit the speed of firing:
+\begin{center}
+\begin{equation}f(I) = \frac{I}{C_{m}V_{th} + t_{ref}I}\end{equation}
+\end{center}
+where $C_{m}$ stands for membrane capacitance, $V_{th}$ is threshold voltage and $t_{ref}$ is refactoring time. Therefore, the rate of firing is directly proportional to the input current.\cite{WulframGerstner2002}
 
 However, if not modified, this model does not implement time-dependent memory. Moreover, it also lacks details in representation of biological neurons, as most of the biophysiological 
-processes are simplified. For example lagging of sodium channel activation present in Hodgkin-Huxley model is absent in IF.\cite{IFModel}
+processes are simplified. For example lagging of sodium channel activation present in Hodgkin-Huxley model is absent in IF.
 
-In order to 
+In order to compensate for the lack of the time-dependent memory, there has been derived an enhanced version of IF model - \emph{Leaky Integrate and Fire} (sometimes refered to as \emph{AdEx} - short for Adaptive Exponential integrate and fire model).\cite{IFModel} This particular implementation relies on two differential equations - one describing the dynamics of membrane coupled with an exponential voltage dependance:
+
+\begin{center}
+\begin{equation}C\frac{dV}{dt} = -g_{L}(V-E_{L}) + g_{L}\Delta_{T}exp(\frac{V-V_{T}}{\Delta_{T}})-\omega + I\end{equation}
+\end{center}
+
+And another one used for deriving adaptation:
+
+\begin{center}
+\begin{equation}\tau_{\omega} \frac{d\omega}{dt} = a(V-E_{L}) -\omega \end{equation}
+\end{center}
+
+where V is the membrane potential, $\omega$ - the adaptation variable, I - the input current, C - the membrane capacitance, $g_{L}$ - the leak conductance, $E_{L}$ - the leak reversal potential, $V_{T}$ - the threshold, $\Delta_{T}$ the slope factor, a the adaptation coupling parameter and $\tau_{\omega}$ is the adaptation time constant.
 
 \item \textbf{Hodgkin and Huxley}
 
 \emph{Hodgkin and Huxley}(HH) model aims to incorporate an exhaustive description of a real biological neuron - therefore, requiring a large number of parameters to operate.
 As opposed to IF, HH model uses nonlinear differential equations in its activation function to determine the membrane charasteristics and, therefore, provide the closest 
-biophysical representation of a biological neuron.\cite{Hodgkin1952} The usual
+biophysical representation of a biological neuron.\cite{Hodgkin1952} The interpretation of this model operates using several equations for \emph{voltage-gated ion channels}:
+
+\begin{center}
+\begin{equation}g_{n}(V_{m}) = \bar{g}_{n} \varphi^{\alpha} \chi^{\beta}\end{equation}
+\begin{equation}\dot{\varphi}(V_{m}) = \frac{1}{\tau_{\varphi}}(\varphi_{\infty} - \varphi)\end{equation}
+\begin{equation}\dot{\chi}(V_{m}) = \frac{1}{\tau_{\chi}}(\chi_{\infty} - \chi)\end{equation}
+\end{center}
+
+Here $\varphi$ and $\chi$ represent the activation and inactivation functions.
+ELABORATE
 
 \item \textbf{Izhikevich model}
 
 \emph{Izhikevich neuron model} is aiming to produce a plausible representation, close to HH, of a biological neuron, while maintaining the computational power and efficiency of an IF model.
 It has several improvements over IF model, such as enhancing the activation function for the purpose of more accurate spike firing representation, which is done by introducing more 
 types of spiking periods and give the implementation.\cite{Izhikevich2003}
+ELABORATE
 
 \end{itemize}
 
@@ -140,7 +167,8 @@ a very interesting project, and due to exceptionally difficult task of reducing 
 
 \section{NeMo Architecture}
 
-
+The main project platform, NeMo, has most of its functionality concentrated around three classes - \emph{Configuration}, \emph{Network} and \emph{Simulation}.
+ELABORATE
 
 
 \section{Distributed Computing}
@@ -158,6 +186,7 @@ limited because of power consumption.\cite{Kumar2002}
 
 Due to the nature of this project, a high degree of parallelism is crucial, in order to maintain the highest possible speed of simulation - the matter is that simulation would
 be split between several clusters (\emph{nodes}) which, depending on the mapping, will operate independently, after receiving the information from main node at the start.
+PICTURE
 
 \subsection{Message Passing Interface}
 
@@ -185,27 +214,32 @@ MPICH2 for this project is that this package is already installed on the lab mac
 
 \subsection{Cluster-based approach and Mapping}
 
-One of the most important part of the simulation is the initial \textbf{mapping} of neurons across the hosts, as it will affect the amount of inter-cluster communication and therefore overall efficiency
-of the system. \emph{Mapping} defines the layout of the resulting system and is directly affected by topology - neurons are split into several groups depending on the number of synapses connecting those.
-The main idea is to keep the amount of inter-cluster communication to minimum, as it is more expensive in terms of memory and time than communication within the node.
+One of the most important part of the simulation is the initial \textbf{mapping} of neurons across the hosts, as it will affect the amount of inter-cluster communication and therefore overall efficiency of the system. \emph{Mapping} defines the layout of the resulting system and is directly affected by topology - neurons are split into several groups depending on the number of synapses connecting those. The main idea is to keep the amount of inter-cluster communication to minimum, as it is more expensive in terms of memory and time than communication within the node.
 
 Mapping is defined by topology and hierarchy of the system - most of implementations have a master node, accountable for adding neurons and synapses to particular clusters, however, it is
 possible to have a distributed system, were all nodes are equal in resposibility and actions are taken independently.
+
+\subsubsection{Clustering algorithms and research}
+
+Division of large scale networks, if applied correctly, greatly increases performance - making these nets computationally feasible to simulate. Consequently, there have already been several successful attempts of classifying best clustering algorithms. This section will give an insight into the algorithm introduced by Mark Newman which focuses on a specific parameter of the network - \emph{modularity}.
+
+\textbf{Modularity} is a property of the network that describes its 
+ELABORATE
 
 \subsubsection{Current implementations of cluster-based approach within neural networks}
 At the moment there are already a few implementations present that focus on the clusterisation of the neural networks in order to achieve better inter-neuron communication and bigger throughput. 
 These are the most notable ones that have a direct connection to my project.
 
 \begin{itemize}
-\item{Izhikevich's large scale model for simulating mammalian thalamocortical systems}
+\item{\textbf{Izhikevich's large scale model for simulating mammalian thalamocortical systems}}
 
 The work by Eugene Izhikevich\cite{EugeneM.Izhikevich2008}, though being mostly focused on the research of brain dynamics, showed that clusterisation of the network system across several processors would result in much higher throughput rate for a large scale network - million of neurons, tens of millions of neuron compartmentss and almost half a billion synapses. In this particular case C with MPI implementation was used to allow for inter-cluster communication, and it allowed the researchers to scale the time needed for calculation of one sub-millisecond time-step for this type of network to one minute.
 
-\item{IBM cortical simulator project (C2)}
+\item{\textbf{IBM cortical simulator project (C2)}}
 
 Research conducted by a group of scientists from the IBM Research Centre in Almaden\cite{DharmendraS.Modha2007} focused on creation of a platform capable of simulating cerebral cortex activity. Consequently, due to extremely large scale of simulation - in this project more than 55 million Izhikevich neurons were simulated within one network - and availability of clusters within the centre, a distributed approach was applied with the use of MPI. When applied to this problem, cluster mapping managed to achieve balanced workload across the network, as well as the uniform inhibitory neuron distribution. The reason the latter point mattered in the simulation is the fact that more than 60\% of firing was inhibitory - therefore, incorrectly distributed neuron set would have a significant effect on results.
 
-\item{Neuromorphic model for GPGPU cluster}
+\item{\textbf{Neuromorphic model for GPGPU cluster}}
 
 Simulator produced by Bing Han and Tarek Taha aimed at the speedup of simulations with Izhikevich and Hodgkin-Huxley neuron models\cite{TarekM.Taha2010}. Use of GPGPUs and multi-threaded MPI provided heterogeneous  clusters and per-cluster computational capacity, and clustering algorithm ensured correct distribution of neurons in accordance to the 2 layers present in the system. As a result, a significant speedup was achieved in computation, factor of 177.0 for Hodgkin-Huxley and 24.6 for Izhikevich neurons, for the task of image recognition.
 \end{itemize}
