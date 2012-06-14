@@ -4,6 +4,13 @@
   \date{\today}
 \usepackage{a4}
 \usepackage{listings}
+\lstset{
+	language=C++,
+	frame=single,
+	numbers=left,
+	xleftmargin={\ifodd\value{page}1em\else-\marginparwidth\fi},
+	xrightmargin={\ifodd\value{page}-\marginparwidth\else1em\fi}
+}
 \usepackage{graphicx}
 \usepackage{url}
 \usepackage[english]{babel}
@@ -67,10 +74,20 @@ I would like to thank...
 
 \chapter{Simulation Classes}
 \section{MasterSimulation}
+\lstinputlisting{code/MasterSimulation.hpp}
+\clearpage
+\lstinputlisting{code/MasterSimulation.cpp}
+\clearpage
 \section{WorkerSimulation}
-
+\lstinputlisting{code/WorkerSimulation.hpp}
+\clearpage
+\lstinputlisting{code/WorkerSimulation.cpp}
+\clearpage
 \chapter{Full Mapper Implementation}
-
+\lstinputlisting{code/MapperSim.hpp}
+\clearpage
+\lstinputlisting{code/MapperSim.cpp}
+\clearpage
 \chapter{Performance Comparison Graphs}
 
 

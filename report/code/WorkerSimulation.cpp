@@ -12,15 +12,7 @@ using namespace std;
 namespace nemo {
 	namespace mpi_dist {
 
-WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workerCount) :
-														mapper(workerCount-1),
-														rank(rank),
-														reply(1),
-														workers(workerCount),
-														fired(0),
-														spikes(0),
-														spikesPerStep(0),
-														firedPerStep(0)
+WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workerCount) : mapper(workerCount-1), rank(rank), reply(1), workers(workerCount), fired(0), spikes(0), spikesPerStep(0), firedPerStep(0)
 {
 	;
 	nemo::Network* net = new nemo::Network();

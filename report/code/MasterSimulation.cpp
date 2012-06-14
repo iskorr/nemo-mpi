@@ -13,10 +13,7 @@ using namespace std;
 namespace nemo {
 	namespace mpi_dist {
 
-MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configuration& conf, unsigned duration, bool timed, const string& filename) : 
-									workers(MPI::COMM_WORLD.Get_size()),
-									neuronCount(net.neuronCount()),
-									verbose(false)
+MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configuration& conf, unsigned duration, bool timed, const string& filename) : workers(MPI::COMM_WORLD.Get_size()), neuronCount(net.neuronCount()), verbose(false)
 {
 	unsigned ok, worker = 1;
 	MapperSim mapper(net, workers-1);
