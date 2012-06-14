@@ -28,7 +28,7 @@ public:
 	unsigned mapGlobal(unsigned lidx, unsigned rank);
 	void allocateNeuronsUniform(const nemo::Network& net);
 	/* Cluster mapping */
-	void allocateNeurons(const nemo::Network& net);
+	void allocateNeurons(const nemo::Network& net, unsigned ncount);
 };
 	}
 }

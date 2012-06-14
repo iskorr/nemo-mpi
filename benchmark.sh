@@ -1,19 +1,15 @@
-./random output/rand.txt -n 100 -m 1000
-./random output/rand.txt -n 200 -m 1000
-./random output/rand.txt -n 300 -m 1000
-./random output/rand.txt -n 400 -m 1000
-./random output/rand.txt -n 500 -m 1000
-./random output/rand.txt -n 600 -m 1000
-./random output/rand.txt -n 700 -m 1000
-./random output/rand.txt -n 800 -m 1000
-./random output/rand.txt -n 900 -m 1000
-./random output/rand.txt -n 1000 -m 1000
-./random output/rand.txt -n 2000 -m 1000
-./random output/rand.txt -n 3000 -m 1000
-./random output/rand.txt -n 4000 -m 1000
-./random output/rand.txt -n 5000 -m 1000
-./random output/rand.txt -n 6000 -m 1000
-./random output/rand.txt -n 7000 -m 1000
-./random output/rand.txt -n 8000 -m 1000
-./random output/rand.txt -n 9000 -m 1000
-./random output/rand.txt -n 10000 -m 1000
+mpirun -np 2 ./mpi_dist_general 1000 100 0 500 1 0 mpi1000.txt
+mpirun -np 3 ./mpi_dist_general 1000 100 0 500 1 0 mpi1000.txt
+mpirun -np 4 ./mpi_dist_general 1000 100 0 500 1 0 mpi1000.txt
+mpirun -np 5 ./mpi_dist_general 1000 100 0 500 1 0 mpi1000.txt
+mpirun -np 6 ./mpi_dist_general 1000 100 0 500 1 0 mpi1000.txt
+mpirun -np 2 ./mpi_dist_general 5000 100 0 500 1 0 mpi5000.txt
+mpirun -np 3 ./mpi_dist_general 5000 100 0 500 1 0 mpi5000.txt
+mpirun -np 4 ./mpi_dist_general 5000 100 0 500 1 0 mpi5000.txt
+mpirun -np 5 ./mpi_dist_general 5000 100 0 500 1 0 mpi5000.txt
+mpirun -np 6 ./mpi_dist_general 5000 100 0 500 1 0 mpi5000.txt
+mpirun -np 2 ./mpi_dist_general 10000 100 0 500 1 0 mpi10000.txt
+mpirun -np 3 ./mpi_dist_general 10000 100 0 500 1 0 mpi10000.txt
+mpirun -np 4 ./mpi_dist_general 10000 100 0 500 1 0 mpi10000.txt
+mpirun -np 5 ./mpi_dist_general 10000 100 0 500 1 0 mpi10000.txt
+mpirun -np 6 ./mpi_dist_general 10000 100 0 500 1 0 mpi10000.txt

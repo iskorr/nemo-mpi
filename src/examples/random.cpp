@@ -116,7 +116,7 @@ main(int argc, char* argv[])
 		unsigned ncount = vm["neurons"].as<unsigned>();
 		unsigned scount = vm["synapses"].as<unsigned>();
 		unsigned dmax = vm["dmax"].as<unsigned>();
-		unsigned duration = 100; //vm["duration"].as<unsigned>();
+		unsigned duration = 500; //vm["duration"].as<unsigned>();
 		unsigned stdp = vm["stdp-period"].as<unsigned>();
 		unsigned verbose = vm["verbose"].as<unsigned>();
 		bool runBenchmark = vm.count("benchmark") != 0;
@@ -142,13 +142,11 @@ main(int argc, char* argv[])
 		if(runBenchmark) {
 			benchmark(sim.get(), ncount, scount, vm);
 		} else {
-			unsigned long start = time(NULL);
-			unsigned res = simulate(sim.get(), duration, stdp, output);
-			unsigned long simtime = time(NULL) - start;
-			/*if (output.is_open()) {
-				output << ncount << " " << simtime << " " << res << std::endl;
+			unsigned long simtime = simulate(sim.get(), duration, stdp, output);
+			if (output.is_open()) {
+				output << ncount << " " << simtime << std::endl;
 				output.close();
-			}*/
+			}
 		}
 		LOG(verbose, "Simulation complete");
 		return 0;

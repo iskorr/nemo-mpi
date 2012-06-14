@@ -49,11 +49,12 @@ this function does not output a binary set of values, but is rather calculated t
 
 \subsubsection{Spiking Neuron Models}
 
-Here some of the spiking (or biological) neuron models will be presented.
+In order to make computer simulations more analytically and computationally tractable, there have been derived several types of neuron models that could be used as best approximation of the actual
+biological neuron behaviour. Here are some of them.
 
 \begin{itemize}
 
-\item Integrate and Fire
+\item \textbf{Integrate and Fire}
 
 \emph{Integrate and Fire}(IF) model is a simple and relatively accurate representation of the actual biological neuron.
 It divides the behaviour of membrane potential into two parts: long periods of \emph{integration} and short firing of \emph{spikes}. The activation function for this kind of neurons is
@@ -63,13 +64,15 @@ Therefore, the rate of firing is directly proportional to the input current.\cit
 However, if not modified, this model does not implement time-dependent memory. Moreover, it also lacks details in representation of biological neurons, as most of the biophysiological 
 processes are simplified. For example lagging of sodium channel activation present in Hodgkin-Huxley model is absent in IF.\cite{IFModel}
 
-\item Hodgkin and Huxley
+In order to 
+
+\item \textbf{Hodgkin and Huxley}
 
 \emph{Hodgkin and Huxley}(HH) model aims to incorporate an exhaustive description of a real biological neuron - therefore, requiring a large number of parameters to operate.
 As opposed to IF, HH model uses nonlinear differential equations in its activation function to determine the membrane charasteristics and, therefore, provide the closest 
-biophysical representation of a biological neuron.\cite{Hodgkin1952}
+biophysical representation of a biological neuron.\cite{Hodgkin1952} The usual
 
-\item Izhikevich model
+\item \textbf{Izhikevich model}
 
 \emph{Izhikevich neuron model} is aiming to produce a plausible representation, close to HH, of a biological neuron, while maintaining the computational power and efficiency of an IF model.
 It has several improvements over IF model, such as enhancing the activation function for the purpose of more accurate spike firing representation, which is done by introducing more 

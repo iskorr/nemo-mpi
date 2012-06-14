@@ -1,4 +1,4 @@
-% This file was created with JabRef 2.6.
+% This file was created with JabRef 2.7b.
 % Encoding: UTF-8
 
 @ARTICLE{AndreasK.Fidjeland2009,
@@ -28,7 +28,7 @@
 
 @BOOK{Bar-Yam2003,
   title = {Dynamics of Complex Systems},
-  publisher = {Addison Weasley},
+  publisher = {Addison Wesley},
   year = {2003},
   author = {Yaneer Bar-Yam},
   owner = {io1009},
@@ -47,7 +47,18 @@
   timestamp = {2012.02.09}
 }
 
-@ARTICLE{,
+@ARTICLE{PartitioningKitay,
+  author = {Darong Lai, Christine Nardini, and Hongtao Lu},
+  title = {Partitioning networks into communities by message passing},
+  journal = {Physical Review E},
+  year = {2011},
+  volume = {Vol. 83},
+  pages = {016-115},
+  owner = {isk3nd3r},
+  timestamp = {2012.06.14}
+}
+
+@ARTICLE{DharmendraS.Modha2007,
   author = {Dharmendra S. Modha, Rajagopal Ananthanarayanan},
   title = {Anatomy of a cortical simulator},
   journal = {SC '07 Proceedings of the 2007 ACM/IEEE conference on Supercomputing},
@@ -113,10 +124,22 @@
   author = {Hideki Tanaka, Takashi Morie and Kazuyuki Aihara},
   title = {A CMOS Spiking Neural Network Circuit with Symmetric/Asymmetric STDP
 	function},
-  journal = {IEICE Transactions on  Fundamentals},
+  journal = {IEICE Transactions on Fundamentals},
   year = {2009},
   volume = {Vol E92-A},
   pages = {1691-98},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@ARTICLE{Hodgkin1952,
+  author = {A. L. Hodgkin and A. F. Huxley},
+  title = {A quantitative description of membrane current and its application
+	to conduction and excitation in nerve},
+  journal = {The Journal of physiology},
+  year = {1952},
+  volume = {Vol. 1},
+  pages = {500-544},
   owner = {io1009},
   timestamp = {2012.02.10}
 }
@@ -227,6 +250,17 @@
   timestamp = {2012.02.10}
 }
 
+@ARTICLE{Newman2006,
+  author = {M. E. J. Newman},
+  title = {Modularity and community structure in networks},
+  journal = {PNAS},
+  year = {2006},
+  volume = {Vol. 103 no. 23},
+  pages = {8577-8582},
+  owner = {isk3nd3r},
+  timestamp = {2012.06.14}
+}
+
 @ELECTRONIC{Philosophy,
   author = {Online Stanford Encyclopedia of Philosophy},
   organization = {Stanford University},
@@ -267,6 +301,15 @@
   year = {2000},
   volume = {Vol. 1},
   pages = {1-36},
+  owner = {io1009},
+  timestamp = {2012.02.10}
+}
+
+@BOOK{Tan2006,
+  title = {Introduction to Data Mining},
+  publisher = {Addison Wesley},
+  year = {2006},
+  author = {Tan, Pang-Ning, Michael Steinbach and Vipin Kumar},
   owner = {io1009},
   timestamp = {2012.02.10}
 }
@@ -354,5 +397,13 @@
   author = {Wulfram Gerstner, Werner Kistler},
   owner = {io1009},
   timestamp = {2012.02.10}
+}
+
+@BOOK{,
+  title = {Methods in Neuronal Modeling : From Ions to Networks},
+  publisher = {MIT Press},
+  year = {1998},
+  owner = {isk3nd3r},
+  timestamp = {2012.06.14}
 }
 

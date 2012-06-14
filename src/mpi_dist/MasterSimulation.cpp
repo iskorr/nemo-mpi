@@ -14,14 +14,15 @@ namespace nemo {
 	namespace mpi_dist {
 
 MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configuration& conf, unsigned duration, bool timed, const string& filename) : 
-																				workers(MPI::COMM_WORLD.Get_size()),
-																				neuronCount(net.neuronCount())
+									workers(MPI::COMM_WORLD.Get_size()),
+									neuronCount(net.neuronCount()),
+									verbose(false)
 {
 	unsigned ok, worker = 1;
 	MapperSim mapper(net, workers-1);
 	
 	// Setting up the network
-	cout << "Master initialised" << endl;
+	if(verbose) cout << "Master initialised" << endl;
 	distributeMapper(mapper);
 	distributeConfiguration(conf);
 	distributeNeurons(net, mapper);
@@ -31,8 +32,10 @@ MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configu
 		MPI::COMM_WORLD.Recv(&ok, 1, MPI::INT, worker, DISTRIBUTION_COMPLETE, status);
 		if (ok == 0) break;
 	}
-	if (worker >= workers-1) cout << "All the workers are set up for simulation" << endl;
-	else cout << "There is a problem with a worker " << worker << endl;
+	if(verbose) {
+		if (worker >= workers-1) cout << "All the workers are set up for simulation" << endl;
+		else cout << "There is a problem with a worker " << worker << endl;
+	}
 	MPI_Barrier(MPI_COMM_WORLD);
 	simulate(duration, timed, filename);
 }
@@ -45,7 +48,7 @@ MasterSimulation::~MasterSimulation()
 void
 MasterSimulation::distributeMapper(nemo::mpi_dist::MapperSim& mapper)
 {
-	cout << "Mapper distribution...";
+	if(verbose) cout << "Mapper distribution...";
 	unsigned strlen, neurons = mapper.neuronCount();
 	vector<string> mapSet = encodeMapper(mapper);
 	for (unsigned worker = 1; worker < workers; ++worker) {
@@ -59,13 +62,13 @@ MasterSimulation::distributeMapper(nemo::mpi_dist::MapperSim& mapper)
 			MPI::COMM_WORLD.Send(&msg, strlen, MPI::CHAR, worker, MAPPER_DATA_TAG);
 		}
 	}
-	cout << ".......complete" << endl;
+	if(verbose) cout << ".......complete" << endl;
 }
 
 void
 MasterSimulation::distributeConfiguration(const nemo::Configuration& conf)
 {
-	cout << "Configuration distribution...";
+	if(verbose) cout << "Configuration distribution...";
 	string config = encodeConfiguration(conf);
 	unsigned strlen = config.size()+1;
 	char msg [strlen];
@@ -75,13 +78,13 @@ MasterSimulation::distributeConfiguration(const nemo::Configuration& conf)
 		MPI::COMM_WORLD.Send(&strlen, 1, MPI::INT, worker, CONFIGURATION_LENGTH_TAG);
 		MPI::COMM_WORLD.Send(&msg, strlen, MPI::CHAR, worker, CONFIGURATION_DATA_TAG);
 	}
-	cout << "complete" << endl;
+	if(verbose) cout << "complete" << endl;
 }
 
 void 
 MasterSimulation::distributeNeurons(const nemo::Network& net, MapperSim& mapper)
 {
-	cout << "Neuron distribution...";
+	if(verbose) cout << "Neuron distribution...";
 	unsigned neuronsPerWorker;
 	string neuronData;
 	for (unsigned worker = 1; worker < workers; ++worker) {
@@ -98,13 +101,13 @@ MasterSimulation::distributeNeurons(const nemo::Network& net, MapperSim& mapper)
 			MPI::COMM_WORLD.Send(&msg, strlen, MPI::CHAR, worker, NEURON_DATA_TAG);
 		}
 	}
-	cout << ".......complete" << endl;
+	if(verbose) cout << ".......complete" << endl;
 }
 
 void
 MasterSimulation::distributeSynapses(const nemo::network::NetworkImpl& net, const MapperSim& mapper)
 {
-	cout << "Synapses distribution...";
+	if(verbose) cout << "Synapses distribution...";
 	string encodedSynapse,sourceSynapse;
 	unsigned source,target,synLength,ok = 0;
 	for(nemo::network::synapse_iterator s = net.synapse_begin(); s != net.synapse_end(); ++s) {
@@ -133,7 +136,7 @@ MasterSimulation::distributeSynapses(const nemo::network::NetworkImpl& net, cons
 	}
 	ok = 1;
 	for (unsigned worker = 1; worker < workers; ++worker) MPI::COMM_WORLD.Send(&ok, 1, MPI::INT, worker, SYNAPSE_END_TAG);
-	cout << ".....complete" << endl;
+	if(verbose) cout << ".....complete" << endl;
 }
 
 float*
@@ -151,12 +154,11 @@ MasterSimulation::getNeuronIdx(unsigned idx, const nemo::Network& net)
 void
 MasterSimulation::simulate(unsigned duration, bool timed, const string& filename)
 {
-	cout << "Simulation started" << endl;
+	if(verbose) cout << "Simulation started" << endl;
 	unsigned stepOK = 0, stepDONE, firingPerStep;
 	unsigned long runtime = 0;
 	nemo::Timer timer;
-	ofstream out;
-  	out.open(filename.c_str(),fstream::app);
+	ofstream out(filename.c_str(), fstream::app);
 	if (timed) {
 		timer.reset();
 		while(timer.elapsedWallclock() < duration) {
@@ -166,7 +168,7 @@ MasterSimulation::simulate(unsigned duration, bool timed, const string& filename
 				MPI::COMM_WORLD.Recv(&stepDONE, 1, MPI::INT, worker, SIM_STEP, status);
 				firingPerStep += stepDONE;
 			}
-			out << timer.elapsedSimulation() << " " << firingPerStep << endl;
+			//out << timer.elapsedSimulation() << " " << firingPerStep << endl;
 			timer.step();
 		}
 		runtime = timer.elapsedWallclock();
@@ -179,12 +181,11 @@ MasterSimulation::simulate(unsigned duration, bool timed, const string& filename
 				MPI::COMM_WORLD.Recv(&stepDONE, 1, MPI::INT, worker, SIM_STEP, status);
 				firingPerStep += stepDONE;
 			}
-			out << timer.elapsedSimulation() << " " << firingPerStep << endl;
+			//out << timer.elapsedSimulation() << " " << firingPerStep << endl;
 			timer.step();
 		}
 		runtime = timer.elapsedWallclock();
 	}
-	out.close();
 	stepOK = 1;
 	MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
 	unsigned totalfirings=0,totalspikes=0,buf;
@@ -194,14 +195,16 @@ MasterSimulation::simulate(unsigned duration, bool timed, const string& filename
 		MPI::COMM_WORLD.Recv(&buf, 1, MPI::INT, worker, SPIKES, status);
 		totalspikes+= buf;
 	}
-/*	if (out.is_open()) {
-		out << neuronCount << " " << totalfirings << " " << runtime << endl;
+	if (out.is_open()) {
+		out << neuronCount << " " << runtime << endl;
 		out.close();
-	}*/
-	if (timed) cout << "Total # of steps succeded: " << timer.elapsedSimulation() << endl;
-	else cout << "Runnning time of the simulation: " << runtime << endl;
-	cout << "Total # of inter-nodal firings: " << totalfirings << endl;
-	cout << "Total # of spikes delivered: " << totalspikes << endl;
+	}
+	if(verbose) {
+		if (timed) cout << "Total # of steps succeded: " << timer.elapsedSimulation() << endl;
+		else cout << "Runnning time of the simulation: " << runtime << endl;
+		cout << "Total # of inter-nodal firings: " << totalfirings << endl;
+		cout << "Total # of spikes delivered: " << totalspikes << endl;
+	}
 }
 	}
 }

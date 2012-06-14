@@ -19,6 +19,7 @@ class MasterSimulation {
 
 		MPI::Status status;
 		unsigned workers, neuronCount;
+		bool verbose;
 		void distributeMapper(nemo::mpi_dist::MapperSim& mapper);
 		void distributeConfiguration(const nemo::Configuration& conf);
 		void distributeNeurons(const nemo::Network& net, MapperSim& mapper);
