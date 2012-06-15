@@ -190,7 +190,7 @@ MasterSimulation::simulate(unsigned duration, bool timed, const string& filename
 		totalspikes+= buf;
 	}
 	if (out.is_open()) {
-		out << runtime << " " << timer.elapsedSimulation() << endl;
+		out << runtime 	<< endl;
 		out.close();
 	}
 	if(verbose) {

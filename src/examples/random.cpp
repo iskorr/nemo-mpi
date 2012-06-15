@@ -137,7 +137,6 @@ main(int argc, char* argv[])
 		}*/
 
 		std::ostream out(0);
-
 		LOG(verbose, "Constructing network");
 		boost::scoped_ptr<nemo::Network> net(nemo::random::construct(ncount, scount, dmax, stdp != 0));
 		LOG(verbose, "Creating configuration");
@@ -151,8 +150,9 @@ main(int argc, char* argv[])
 		} else {
 			nemo::Timer timer;
 			timer.reset();
-			simulate(sim.get(), duration, stdp, output);
+			simulate(sim.get(), duration, stdp, out);
 			unsigned long time = timer.elapsedWallclock();
+			std::cout << time << std::endl;
 			if (output.is_open()) {
 				output << ncount << " " << time << std::endl;
 				output.close();
