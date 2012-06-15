@@ -13,7 +13,7 @@
 #include <boost/program_options.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <examples/common.hpp>
-#include <time.h>
+#include <nemo/Timer.hpp>
 #include <boost/random.hpp>
 #include <nemo.hpp>
 
@@ -100,7 +100,8 @@ main(int argc, char* argv[])
 {
 	namespace po = boost::program_options;
 	char* name;
-	if (argc > 2) name = argv[1];
+	if (argc > 1) name = argv[1];
+	else name = "t.txt";
 	try {
 
 		po::options_description desc = commonOptions();
@@ -142,11 +143,12 @@ main(int argc, char* argv[])
 		if(runBenchmark) {
 			benchmark(sim.get(), ncount, scount, vm);
 		} else {
-			unsigned long start = time(NULL);
+			nemo::Timer timer;
+			timer.reset();
 			simulate(sim.get(), duration, stdp, output);
-			start  = time(NULL) - start;
+			unsigned long time = timer.elapsedWallclock();
 			if (output.is_open()) {
-				output << ncount << " " << start << std::endl;
+				output << ncount << " " << time << std::endl;
 				output.close();
 			}
 		}
