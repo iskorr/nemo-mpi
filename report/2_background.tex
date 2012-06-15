@@ -83,6 +83,7 @@ And another one used for deriving adaptation:
 
 where V is the membrane potential, $\omega$ - the adaptation variable, I - the input current, C - the membrane capacitance, $g_{L}$ - the leak conductance, $E_{L}$ - the leak reversal potential, $V_{T}$ - the threshold, $\Delta_{T}$ the slope factor, a the adaptation coupling parameter and $\tau_{\omega}$ is the adaptation time constant.
 
+
 \item \textbf{Hodgkin and Huxley}
 
 \emph{Hodgkin and Huxley}(HH) model aims to incorporate an exhaustive description of a real biological neuron - therefore, requiring a large number of parameters to operate.
@@ -95,15 +96,31 @@ biophysical representation of a biological neuron.\cite{Hodgkin1952} The interpr
 \begin{equation}\dot{\chi}(V_{m}) = \frac{1}{\tau_{\chi}}(\chi_{\infty} - \chi)\end{equation}
 \end{center}
 
-Here $\varphi$ and $\chi$ represent the activation and inactivation functions.
-ELABORATE
+where $\varphi_{\infty}$, $\varphi$ and $\chi$, $\chi_{\infty}$ represent the activation and inactivation steady state and gating values, respectively, $\bar{g}_{n}$ is the maximal value of conductance, $\alpha$ and $\beta$ are constants and $\tau_{\varphi}$ and $\tau_{\chi}$ are time constants for activation and inactivation, respectively.
+
 
 \item \textbf{Izhikevich model}
 
 \emph{Izhikevich neuron model} is aiming to produce a plausible representation, close to HH, of a biological neuron, while maintaining the computational power and efficiency of an IF model.
 It has several improvements over IF model, such as enhancing the activation function for the purpose of more accurate spike firing representation, which is done by introducing more 
 types of spiking periods and give the implementation.\cite{Izhikevich2003}
-ELABORATE
+
+Izhikevich, using bifurcation methodologies\cite{Izhikevich2007}, was able to reduce many biophysically accurate Hodgkin–Huxley-type neuronal models to a two-dimensional system of ordinary differential equations of the form:
+
+\begin{center}
+\begin{equation}v^\prime = 0.04v^2 + 5v + 140 - u + I \end{equation}
+\begin{equation}u^\prime = a(bv-u)\end{equation}
+\end{center}
+
+with auxiliary after-spike resetting:
+
+\begin{center}
+if $v \geq 30$ mV, then $v \leftarrow c$ and $ u \leftarrow u + d$
+\end{center}
+
+where $v$ and $u$ are dimensionless variables, and $a$, $b$, $c$, and $d$ are dimen-
+sionless parameters, and $\prime$ =$\frac{d}{dt}$, where $t$ is the time.
+
 
 \end{itemize}
 
@@ -140,12 +157,12 @@ In order to give a better outlook on the field of spiking neural network simulat
 
 \subsection{NeMo}
 
-\emph{NeMo} is a spiking neural network simulator aimed at real-time simulation of large-scale neuron systems with the use of highly parallel GPUs.\cite{AndreasK.Fidjeland2009}
+\emph{NeMo} is a spiking neural network simulator created within Imperial College London, aimed at real-time simulation of large-scale neuron systems with the use of highly parallel GPUs.\cite{AndreasK.Fidjeland2009}
 NeMo's main purpose is to produce simulations that would be particularly useful for research, therefore, main emphasis in this tool is put onto scalability and real-time aspects
 of produced simulations.
 
-NeMo is the main platform of MPI implementation for this project. The main goal is to improve inter-neural communication between computational clusters within NeMo.
-At the same time, neuron mapping should be changed to ensure efficient communication during the simulation. NeMo simulator is going to be shown in more details in the following section.
+NeMo is the foundation platform of MPI implementation for this project. The main goal is to improve inter-neural communication between computational clusters within NeMo.
+At the same time, neuron mapping should be changed to ensure efficient communication during the simulation. The architecture of the simulator is going to be shown in more details in the following section.
 
 \subsection{Brian}
 
@@ -167,8 +184,8 @@ a very interesting project, and due to exceptionally difficult task of reducing 
 
 \section{NeMo Architecture}
 
+Being the centre of the project NeMo has 
 The main project platform, NeMo, has most of its functionality concentrated around three classes - \emph{Configuration}, \emph{Network} and \emph{Simulation}.
-ELABORATE
 
 
 \section{Distributed Computing}
@@ -186,7 +203,9 @@ limited because of power consumption.\cite{Kumar2002}
 
 Due to the nature of this project, a high degree of parallelism is crucial, in order to maintain the highest possible speed of simulation - the matter is that simulation would
 be split between several clusters (\emph{nodes}) which, depending on the mapping, will operate independently, after receiving the information from main node at the start.
-PICTURE
+
+It is, however, worth mentioning, that implementation of parallel computations within a system has to be strictly guided to avoid possible \emph{race conditions} and \emph{deadlocks}, which
+could occur when separate subsystems try to gain access to shared resources.
 
 \subsection{Message Passing Interface}
 
@@ -214,7 +233,14 @@ MPICH2 for this project is that this package is already installed on the lab mac
 
 \subsection{Cluster-based approach and Mapping}
 
-One of the most important part of the simulation is the initial \textbf{mapping} of neurons across the hosts, as it will affect the amount of inter-cluster communication and therefore overall efficiency of the system. \emph{Mapping} defines the layout of the resulting system and is directly affected by topology - neurons are split into several groups depending on the number of synapses connecting those. The main idea is to keep the amount of inter-cluster communication to minimum, as it is more expensive in terms of memory and time than communication within the node.
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale = 0.3]{images/modular_division.png}
+\end{center}
+\caption{Example of a network divided into 3 modules\cite{Newman2006}}
+\end{figure}
+
+One of the most important part of the simulation is the initial \textbf{mapping} of neurons across the hosts, as it will affect the amount of inter-cluster communication and therefore overall efficiency of the system. Mapping defines the layout of the resulting system and is directly affected by topology - neurons are split into several groups depending on the number of synapses connecting those. The main idea is to keep the amount of inter-cluster communication to minimum, as it is more expensive in terms of memory and time than communication within the node.
 
 Mapping is defined by topology and hierarchy of the system - most of implementations have a master node, accountable for adding neurons and synapses to particular clusters, however, it is
 possible to have a distributed system, were all nodes are equal in resposibility and actions are taken independently.
@@ -223,7 +249,9 @@ possible to have a distributed system, were all nodes are equal in resposibility
 
 Division of large scale networks, if applied correctly, greatly increases performance - making these nets computationally feasible to simulate. Consequently, there have already been several successful attempts of classifying best clustering algorithms. This section will give an insight into the algorithm introduced by Mark Newman which focuses on a specific parameter of the network - \emph{modularity}.
 
-\textbf{Modularity} is a measure of the structure of the network that describes its strength of division into subgroups (\emph{modules})
+\textbf{Modularity} is a measure of the structure of the network that describes its strength of division into subgroups (\emph{modules}).\cite{Newman2004} Effectively, it defines how a graph of a network can be split into highly connected subgraphs, whilst maintaining relatively low number of inter-module connections. This measure could be used to guide the structure of the communication layer of a distributed system, as it allows to minimize the cost of inter-process communication (which could be quite expensive, depending on the network capacity and the overall communication structure).
+
+One of the ways to calculate modularity, suggested by Mark Newman in 2006\cite{Newman2006}, is to construct a \emph{modularity matrix} and then judge the division of vertices within the network depending on the eigenvalues of this matrix. This algorithm is the one that was chosen for the creation of the network mapper for the project, so it will be shown in detail later.
 
 \subsubsection{Current implementations of cluster-based approach within neural networks}
 At the moment there are already a few implementations present that focus on the clusterisation of the neural networks in order to achieve better inter-neuron communication and bigger throughput. 

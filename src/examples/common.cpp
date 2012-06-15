@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include <boost/random.hpp>
+#include <nemo/Timer.hpp>
 
 #include "common.hpp"
 
@@ -131,7 +132,6 @@ simulate(nemo::Simulation* sim, unsigned time_ms, unsigned stdp, std::ostream& o
 		/*for(std::vector<unsigned>::const_iterator fi = fired.begin(); fi != fired.end(); ++fi) {
 			out << ms << " " << *fi << "\n";
 		}*/
-		ms += 1;
 		if(stdp != 0 && ms % stdp == 0) {
 			sim->applyStdp(1.0);
 		}

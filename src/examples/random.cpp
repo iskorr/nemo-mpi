@@ -100,8 +100,14 @@ main(int argc, char* argv[])
 {
 	namespace po = boost::program_options;
 	char* name;
+<<<<<<< HEAD
 	if (argc > 1) name = argv[1];
 	else name = "t.txt";
+=======
+	unsigned stime = 0;
+	if (argc > 1) name = argv[1];
+	if (argc > 2) stime = ::atoi(argv[2]);
+>>>>>>> 4debf3c2972334f446b21ea206237e989d537de5
 	try {
 
 		po::options_description desc = commonOptions();
