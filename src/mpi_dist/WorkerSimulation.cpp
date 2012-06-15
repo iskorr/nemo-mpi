@@ -40,18 +40,14 @@ void
 WorkerSimulation::runSimulation(nemo::Simulation* sim)
 {
 	unsigned stepOK;
-	MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
-	while(stepOK == 0) {
-		if(workers > 2) {
-			vector <pair<unsigned,float> > stim (stim_template);
-			enqueueIncomingSpikes(sim, stim);
-			distributeOutgoingSpikes(sim->step(stim));
-		} else {
-			sim->step();
-		}		
+	while(true) {
+		vector <pair<unsigned,float> > stim (stim_template);
+		enqueueIncomingSpikes(sim, stim);
+		MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
+		if (stepOK > 0) break;
+		distributeOutgoingSpikes(sim->step(stim));
 		MPI::COMM_WORLD.Send(&firedPerStep, 1, MPI::INT, MASTER, SIM_STEP);
 		firedPerStep = 0, spikesPerStep = 0;
-		MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
 	}
 	MPI::COMM_WORLD.Send(&fired, 1, MPI::INT, MASTER, FIRINGS);
 	MPI::COMM_WORLD.Send(&spikes, 1, MPI::INT, MASTER, SPIKES);
