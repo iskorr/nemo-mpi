@@ -100,7 +100,9 @@ main(int argc, char* argv[])
 {
 	namespace po = boost::program_options;
 	char* name;
-	if (argc > 2) name = argv[1];
+	unsigned stime = 0;
+	if (argc > 1) name = argv[1];
+	if (argc > 2) stime = ::atoi(argv[2]);
 	try {
 
 		po::options_description desc = commonOptions();
@@ -142,11 +144,9 @@ main(int argc, char* argv[])
 		if(runBenchmark) {
 			benchmark(sim.get(), ncount, scount, vm);
 		} else {
-			unsigned long start = time(NULL);
-			simulate(sim.get(), duration, stdp, output);
-			start  = time(NULL) - start;
+			unsigned res = simulate(sim.get(), stime, stdp, output);
 			if (output.is_open()) {
-				output << ncount << " " << start << std::endl;
+				output << ncount << " " << res << std::endl;
 				output.close();
 			}
 		}

@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include <boost/random.hpp>
+#include <nemo/Timer.hpp>
 
 #include "common.hpp"
 
@@ -123,10 +124,14 @@ benchmark(nemo::Simulation* sim, unsigned n, unsigned m,
 
 
 
-void
+unsigned
 simulate(nemo::Simulation* sim, unsigned time_ms, unsigned stdp, std::ostream& out)
 {
-	for(unsigned ms=0; ms<time_ms; ) {
+	nemo::Timer timer;
+	timer.reset();
+	unsigned ms = 0;
+	while (timer.elapsedWallclock() < time_ms) {
+//	for(unsigned ms=0; ms<time_ms; ) {
 		const std::vector<unsigned>& fired = sim->step();
 		/*for(std::vector<unsigned>::const_iterator fi = fired.begin(); fi != fired.end(); ++fi) {
 			out << ms << " " << *fi << "\n";
@@ -136,6 +141,7 @@ simulate(nemo::Simulation* sim, unsigned time_ms, unsigned stdp, std::ostream& o
 			sim->applyStdp(1.0);
 		}
 	}
+	return ms;
 }
 
 
