@@ -1,14 +1,18 @@
 \chapter{Implementation}
 
-This chapter will cover the whole process of the actual implementation of the design
+This chapter will cover the actual implementation of the project. The whole process of implementation was split into two parts: creation of the MPI Layer and clustering implementation within the Mapper class.
 
 \section{MPI Layer}
 
-Here is how the MPI layer was built
+The MPI Layer, as mentioned before, operates, based on the two main entities - \textbf{MasterSimulation} and \textbf{WorkerSimulation} classes.
+
+\emph{Master} is responsible for clustering and separation of the user input, distribution of this information to the corresponding workers and synchronisation of workers during simulation timesteps.
+
+\emph{Worker} (sometimes regarded as nodes) is running the simulation and communicates with Master to receive user-input information (initialisation parameters) and with other Workers during simulation.
 
 \subsection{Basic Distributed Platform}
 
-Distributed platform integration
+The construction of the basic platform focused on establishing the communication channel with the 
 
 \subsubsection{Initial parameters distribution}
 
@@ -37,3 +41,9 @@ Newman's work in detail
 \subsection{Mapper integration}
 
 His algorithm implemented with code snippets
+
+\section{Alternative Solutions}
+
+\begin{itemize}
+\item{Use of Boost libraries}
+\end{itemize}

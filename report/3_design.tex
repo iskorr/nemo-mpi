@@ -7,12 +7,11 @@ It will also cover design paradigms used for project guidance, as well as, the s
 
 Throughout the course of project, the main aims that were targeted had been:
 
-\begin{itemize}
+\begin{enumerate}
 \item {\textbf{Create a distributed version of NeMo, making it capable of scalable simulations with the use of multiple processes}}
 \item {\textbf{Throughout implementation of the distributed capabilities, leave the core NeMo functionality intact - build on top}}
 \item {\textbf{Implement clustering algorithm that would allow the resulting program to operate within the network capacity and distribute the workload in a more efficient manner}}
-\item {\textbf{Lower the requirements set by the platform for the target machine(s) through parallelization}}
-\end{itemize}
+\end{enumerate}
 
 Setting out the objectives this way helped to percieve a more detailed picture of the project as a whole and gave understanding of the set of stages that were to be accomplished in order to
 make the project meet these objectives.
@@ -25,12 +24,14 @@ After having all of the main goals set out, it is important to get the structure
 
 In order to provide a more detailed picture of the distributed system, here is the set of inner classes of the NeMo core simulation classes.
 
-\begin{figure}[h]
+\begin{figure}[h!]
 \begin{center}
-\includegraphics[scale = 0.4]{images/nemo_simulation_schematic.png}
+\includegraphics[scale = 0.6]{images/nemo_simulation_schematic.png}
 \end{center}
 \caption{Schematic representation of NeMo simulation}
 \end{figure}
+
+Early in the project design it became apparent from the experience from MPI examples, that for the distributed simulation to run successfully, there has to be a hierarchy between classes - in this particular case, Master - Worker simulations. This way there would be a controller that would output the collected information, distribute the initial configuration and ensure synchronization between all of workers throughout timesteps.
 
 Creation of the distributed system that would run the simulator could be split into 3 distinct steps:
 
@@ -42,7 +43,7 @@ By accomplishment of this step, the system has to be able to run on several proc
 
 \begin{figure}[h!]
 \begin{center}
-\includegraphics[scale = 0.45]{images/design_stage_1.png}
+\includegraphics[scale = 0.7]{images/design_stage_1.png}
 \end{center}
 \caption{Schematic model of step 1}
 \end{figure}
@@ -53,7 +54,7 @@ After thorough research conducted into the use of MPI protocol, create a simulat
 
 \begin{figure}[h!]
 \begin{center}
-\includegraphics[scale = 0.45]{images/design_stage_2.png}
+\includegraphics[scale = 0.7]{images/design_stage_2.png}
 \end{center}
 \caption{Schematic model of step 2}
 \end{figure}
@@ -65,7 +66,7 @@ waiting for all of the communication to end, and advancing simulation one step f
 
 \begin{figure}[h!]
 \begin{center}
-\includegraphics[scale = 0.45]{images/design_stage_3.png}
+\includegraphics[scale = 0.7]{images/design_stage_3.png}
 \end{center}
 \caption{Schematic model of step 2}
 \end{figure}
@@ -80,7 +81,7 @@ This section covers the structure of design that allows the distributed version 
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale = 0.1]{images/placeholder.jpg}
+\includegraphics[scale = 0.5]{images/placeholder.png}
 \end{center}
 \caption{NeMo simulation core}
 \end{figure}
@@ -91,7 +92,7 @@ In order to make the project meet this target, the structure has been developed 
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale = 0.1]{images/placeholder.jpg}
+\includegraphics[scale = 0.5]{images/placeholder.png}
 \end{center}
 \caption{Distributed simulation design}
 \end{figure}
@@ -100,7 +101,7 @@ As it can be easily observed, the design of the distributed version treats the c
 
 \subsection{Mapping}
 
-In this section, the structure of the mapper class will be discussed. The actual mapping function will be expressed in detail later, in Implementation.
+In this section, the structure of the mapper class will be discussed. The actual clustering function will be expressed in detail later, in Implementation.
 
 Mapping as a procedure is taking place early during the simulation initialisation, therefore, it does not have strong time constraints. However, it is worth noting that it still has to abide the rule of non-interference within NeMo core functionality, as a result, collecting information only through the public methods, rather than dealing with the actual data sets.
 
@@ -108,12 +109,25 @@ Mapper class design has three main requirements it has to satisfy: correct imple
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale = 0.1]{images/placeholder.jpg}
+\includegraphics[scale = 0.5]{images/placeholder.png}
 \end{center}
 \caption{Mapping scheme}
 \end{figure}
 
-The core functionality of the mapper requires to have a storage for neuron global-to-local and local-to-global mappings. This is accomplished by implementing two arrays that are populated during the simulation setup stage via interaction with the NeMo network class. Arrays were chosen as they are easy to access and relatively simple for compression, therefore meeting two goals at once.
+The core functionality of the mapper requires to have a storage for neuron global-to-local and local-to-global mappings. This is accomplished by implementing two arrays that are populated during the simulation setup stage via interaction with the NeMo network class. The choice of using arrays was made as they are easy to access and relatively simple for compression, therefore meeting two goals at once.
+
+\clearpage
+
+\section{Final Design}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale = 1]{images/placeholder.png}
+\end{center}
+\caption{Mapping scheme}
+\end{figure}
+
+By comprising all of these findings into one solution, the final design of the system was built. It has most of NeMo core functionality and provides the distributed version of simulation that could be mapped onto any number of processes.
 
 \section{Alternative Solutions}
 
@@ -121,17 +135,12 @@ Throughout the stage of designing of the distributed version, there have been se
 
 \begin{itemize}
 
-\item {Latency and Spike delivery}
+\item{\textbf{Single mapper, accessible across the network}}
 
-Due to latency within the network of processors the system was tested on, there were a few precedents of race conditions that caused uncertain behaviour of the simulator - therefore, giving output that differed significantly from the desired one. In order to overcome this drawback, a timer system within the master simulation has been implemented - this ensured control of the communications, and allowed for stops with delay, to deal with propagating spikes. That move has significantly increased precision of the simulation, moreover, giving a better overview of the performance.
+This solution aimed at disposing of necessity to distribute the mapper across the workers. This would save space and make simulation setup time shorter, however, a lot more network capacity would be used for queries, more time would be needed to execute those and, finally, separate mapper, being a shared resource would definitely cause a bottleneck for a parallel simulation.
+
+\item{\textbf{Provide the inner set of variables of the network to the mapper during initialisation}}
+
+If this step is taken, less time would be needed for mapper generation - however, this would also breach the policy of non-interference with the innate NeMo properties, by altering the adding more public internal functions.
 
 \end{itemize}
-
-\section{Final Design}
-
-
-\section{Tools}
-
-The list of tools, used throughout this project could be separated into several subgroups by their purpose. Here, I will cover the use of each of those.
-
-\subsection{Version Control}
