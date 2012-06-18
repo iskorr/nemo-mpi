@@ -12,15 +12,54 @@ The MPI Layer, as mentioned before, operates, based on the two main entities - \
 
 \subsection{Basic Distributed Platform}
 
-The construction of the basic platform focused on establishing the communication channel between the master simulation and the worker ones. 
+The construction of the basic platform focused on establishing the communication channel between the master simulation and the worker ones. This meant MPI initialisation on both sides, followed by an exchange messages with commonly known communication tags.
+
+The earliest version of the distributed system, that implemented the first design step of building a distributed simulation, consisted of a master, sending out one integer (in this case it was number of neurons to be simulated), that was received by all workers. Once they received this message, self-initialisation of all parameters of the simulation followed, with consequent asynchronous completion after a set number of steps.
 
 \subsubsection{Initial parameters distribution}
 
-Initial solution - basic platform + ditribution of parameters implementation
+Having this initial setup ready, implementation of the second step of distributed version creation followed.
+The master simulation, after having both Configuration and Network passed to it, did a basic division of the neurons per worker - distributed those uniformly:
+\begin{equation}N_{per\ worker} = \frac{N_{neurons}}{N_{workers}}\end{equation}
+The translation of global id to a local one implemented within mapper at that stage is also simple:
+\begin{equation}ID_{global} = ID_{local} + (Rank_{worker}-1)*N_{per\ worker}\end{equation}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale = 0.5]{images/placeholder.png}
+\end{center}
+\caption{Parameters distribution}
+\end{figure}
+
+Once the worker set of parameters needed for initialisation was finalised, those need to be encoded and sent out to the workers. This is done through a set of parsing methods - a pair encode-decode for each type of the data. If the data sent is heterogeneous, i.e. more than one primitive datatype is present, the information is encoded into a string of values.
+
+The whole distribution stage can be split into 4 distinct steps:
+
+\begin{enumerate}
+\item{\textbf{Mapper distribution}}
+
+Mapper has to be encoded with all information present inside - all workers must have the same mapping to ensure correctness of later communication. The data sent is split into a number of strings corresponding to the number of workers and broadcasted for the consequent reconstruction on the sub-simulation.
+
+\item{\textbf{Configuration distribution}}
+
+Configuration is encoded into a string that is also broadcasted to all workers. The information passed does not change, therefore, there is no need to iterate through each master-worker channel.
+
+\item{\textbf{Neuron distribution}}
+
+Once the mapping is set up, the neurons are distributed according to it. Firstly, the worker receives the number of neurons, and then MPI receive method is looped to gather neuronal data. Every string received is decoded, the global index is mapped locally, and, once it is done, a new neuron with this set of parameters is added to the local network.
+
+\item{\textbf{Synapse distribution}}
+
+The last part of the distribution stage, synaptic distribution, is also the most complex - the internal (both source and target are on the same node) synapses are sent as strings to the corresponding worker, whereas external ones need indication for the external target or source. This is done through assigning a negative value to them:
+\begin{equation}Value_{external} = -(Value_{internal}+1)\end{equation}
+Note, that even though the external synaptic structure was implemented, it is not put to use at this stage, as there is no spike delivery integrated between sub-simulations within the system at this point.
+\end{enumerate}
+
+Once all parameters are received, workers set up their simulations and notify master when it is done. When master receives confirmation from all workers, the simulation may commence, through broadcasting the step signal across the network. 
 
 \subsection{Communication Channels Integration}
 
-Communication scheme implementation
+At this point the system has a fully operational distribution channel master-worker.
 
 \subsubsection{Spike Enqueing}
 

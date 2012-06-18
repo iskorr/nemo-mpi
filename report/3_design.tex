@@ -1,11 +1,11 @@
 \chapter{Objectives and Design}
 
-This chapter will provide the overview of the goals set by the project, design implementation aimed to meet those and certain properties of the problem that affected the solution.
-It will also cover design paradigms used for project guidance, as well as, the set of tools used for outlining its aspects.
+The project has a certain set of requirements that are to be satisfied, in order to accomplish it.
+Here, I will provide the overview of the goals set by the project, design implementation aimed to meet those and certain properties of the problem that affected the solution.
 
 \section{Main Objectives}
 
-Throughout the course of project, the main aims that were targeted had been:
+Throughout the course of project, the main aims targeted were:
 
 \begin{enumerate}
 \item {\textbf{Create a distributed version of NeMo, making it capable of scalable simulations with the use of multiple processes}}
@@ -31,7 +31,7 @@ In order to provide a more detailed picture of the distributed system, here is t
 \caption{Schematic representation of NeMo simulation}
 \end{figure}
 
-Early in the project design it became apparent from the experience from MPI examples, that for the distributed simulation to run successfully, there has to be a hierarchy between classes - in this particular case, Master - Worker simulations. This way there would be a controller that would output the collected information, distribute the initial configuration and ensure synchronization between all of workers throughout timesteps.
+Early in the project design it became apparent from the experience from MPI examples\cite{}, that for the distributed simulation to run successfully, there has to be a hierarchy between classes - in this particular case, Master - Worker simulations. This way there would be a controller that would output the collected information, distribute the initial configuration and ensure synchronization between all of workers throughout timesteps.
 
 Creation of the distributed system that would run the simulator could be split into 3 distinct steps:
 
