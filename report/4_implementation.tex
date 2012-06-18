@@ -52,6 +52,9 @@ Once the mapping is set up, the neurons are distributed according to it. Firstly
 
 The last part of the distribution stage, synaptic distribution, is also the most complex - the internal (both source and target are on the same node) synapses are sent as strings to the corresponding worker, whereas external ones need indication for the external target or source. This is done through assigning a negative value to them:
 \begin{equation}Value_{external} = -(Value_{internal}+1)\end{equation}
+
+Worker simulations have two data structures for storing incoming and outgoing synapses. The latter is built simply as an array of pairs - local id of a neuron and a vector of targets. The former, however, needs to store the synapse data - local target, weight, delay, plasticity - so it is structured as a vector of vectors of structs. These two are populated as the worker receives and decodes the synaptic data for external synapses.
+
 Note, that even though the external synaptic structure was implemented, it is not put to use at this stage, as there is no spike delivery integrated between sub-simulations within the system at this point.
 \end{enumerate}
 
@@ -59,11 +62,14 @@ Once all parameters are received, workers set up their simulations and notify ma
 
 \subsection{Communication Channels Integration}
 
-At this point the system has a fully operational distribution channel master-worker.
+At this point the system has a fully operational master-worker distribution channel. Next step is implementation of an inter-worker communication channel used for spike delivery.
+
+First of all, the sources need to be identified, to acquire knowledge of the corresponding targets and their worker location. As given by the NeMo architecture, the simulation step function returns IDs of the neurons fired during this simulation step. These are then
+
 
 \subsubsection{Spike Enqueing}
 
-Spike delivery - enqueing and updates
+
 
 \subsubsection{Spike Distribution}
 
