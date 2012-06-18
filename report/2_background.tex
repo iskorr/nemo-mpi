@@ -261,6 +261,7 @@ The step functions vary, depending on the input that the user wants to pass to t
 \item{$step(vector<id>, vector<float>)$} Step function carrying both neuron and current input.
 \end{itemize}
 
+Step functions are divided into 3 sub-steps: prefire (collection of data), fire (neuron update), postfire (distribution of fire data).
 Finally, for the purpose of simulation constraints this class has a timer associated with it that allows to set limits on time or number of steps.
 \section{Distributed Computing}
 
