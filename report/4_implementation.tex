@@ -6,13 +6,13 @@ This chapter will cover the actual implementation of the project. The whole proc
 
 The MPI Layer, as mentioned before, operates, based on the two main entities - \textbf{MasterSimulation} and \textbf{WorkerSimulation} classes.
 
-\emph{Master} is responsible for clustering and separation of the user input, distribution of this information to the corresponding workers and synchronisation of workers during simulation timesteps.
+\emph{MasterSimulation} is responsible for clustering and separation of the user input, distribution of this information to the corresponding workers and synchronisation of workers during simulation timesteps. It is the core class of the simulation, as it receives original network parameters, specified by the user.
 
-\emph{Worker} (sometimes regarded as nodes) is running the simulation and communicates with Master to receive user-input information (initialisation parameters) and with other Workers during simulation.
+\emph{WorkerSimulation} (sometimes regarded as nodes) is running the simulation and communicates with Master, to receive user-input information (initialisation parameters), and with other Workers during simulation. This is an auxiliary class, that is fully responsible for the local NeMo simulation running on its cluster.
 
 \subsection{Basic Distributed Platform}
 
-The construction of the basic platform focused on establishing the communication channel with the 
+The construction of the basic platform focused on establishing the communication channel between the master simulation and the worker ones. 
 
 \subsubsection{Initial parameters distribution}
 

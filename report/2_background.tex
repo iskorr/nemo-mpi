@@ -18,7 +18,7 @@ In order to distinguish between different generations of neural networks, one wo
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale = 0.6]{images/neuron_model.png}
+\includegraphics[scale = 0.7]{images/neuron_model.png}
 \end{center}
 \caption{A graphical model of a simple artificial neuron\cite{Philosophy}}
 \end{figure}
@@ -31,7 +31,7 @@ transfer (or activation) function.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale = 0.8]{images/spiking-model.png}
+\includegraphics[scale = 0.9]{images/spiking-model.png}
 \end{center}
 \caption{A graphical model of a spiking neuron\cite{HidekiTanaka2009}}
 \end{figure}
@@ -146,7 +146,7 @@ and by doing this significantly increase the efficiency of communication.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale = 0.3]{images/topology.png}
+\includegraphics[scale = 0.5]{images/topology.png}
 \end{center}
 \caption{Topology of a feed-forward neural network\cite{Tan2006}}
 \end{figure}
@@ -184,10 +184,84 @@ a very interesting project, and due to exceptionally difficult task of reducing 
 
 \section{NeMo Architecture}
 
-Being the centre of the project NeMo has 
+Implementation of the distributed system within NeMo, requires good understanding of overall structure of the internal simulation processes. This section will cover core aspects of the simulation.
+
 The main project platform, NeMo, has most of its functionality concentrated around three classes - \emph{Configuration}, \emph{Network} and \emph{Simulation}.
 
+\subsection{Configuration}
 
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale = 0.7]{images/configuration_scheme.png}
+\end{center}
+\caption{Schematic representation of Configuration class}
+\end{figure}
+
+Most of the information specific to the type of simulation is located here. Several properties of simulation can be set through the public functions:
+
+\begin{itemize}
+\item{\textbf{Logging}}
+
+Logging can be enabled for more descriptive simulation.
+
+\item{\textbf{STDP function}}
+
+Use of STDP function can be set, and the function itself specified through public methods.
+
+\item{\textbf{Backend}}
+
+Depending on the machine, running the simulation, type of backend can be specified (CPU or CUDA), together with its description. This project focuses on simulations with CPU backend implementation.
+\end{itemize}
+
+After all of the properties are set, this object is then passed to Simulation class.
+
+\subsection{Network}
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale = 0.7]{images/network_scheme.png}
+\end{center}
+\caption{Schematic representation of Network class}
+\end{figure}
+
+This class comprises all of the data about the neural network to be simulated. Before the simulation commences, the Network object needs to receive neuron and synapse data:
+
+\begin{itemize}
+\item{\textbf{Neurons}}
+
+Network is passed number of neurons, their internal parameters and type. Within the scope of this project, Izhikevich type neurons are going to be used.
+
+\item{\textbf{Synapses}}
+
+Through passing the set of parameters - source, target, delay, weight and plasticity - the synaptic connections within the network are specified.
+\end{itemize}
+
+Once populated, Network is also transferred to Simulation class.
+
+\subsection{Simulation}
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale = 0.7]{images/simulation_scheme.png}
+\end{center}
+\caption{Simulation class}
+\end{figure}
+
+
+The main class for spiking neural network simulation. Once the Configuration and Network have been passed to it, this class constructs the simulation to run, with a set of public methods and step functions, accessible to the user.
+
+Public methods focus on two main functional points: \emph{change of neuron parameters} during the simulation and \emph{application of STDP function} on the network.
+
+The step functions vary, depending on the input that the user wants to pass to the simulation:
+
+\begin{itemize}
+\item{$step()$} Step function without external input, relying fully on the internal state of the neurons.
+\item{$step(vector<id>)$} Step function that is passed the vector of neuron local IDs, specifying the neurons that are required to fire in this step.
+\item{$step(vector<float>)$} Step function that is passed the vector of incoming currents with vector[id] corresponding to the neuron local id for the input.
+\item{$step(vector<id>, vector<float>)$} Step function carrying both neuron and current input.
+\end{itemize}
+
+Finally, for the purpose of simulation constraints this class has a timer associated with it that allows to set limits on time or number of steps.
 \section{Distributed Computing}
 
 As the main objective of the project is to enhance communication efficiency between neurons in the spiking neural network, use of distributed computing plays crucial
@@ -214,8 +288,8 @@ a solid communication channel between the processes in a highly parallelised sys
 C, with the use of built-in functions.
 
 Currently NeMo has an MPI implementation within it, however, it is not the most optimal one. The main idea behind parallelisation in this project is that neurons are allocated, 
-using mapping algorithm, between several computational nodes, which are communicating with each other with the use of MPI. Therefore, one of the main objectives will be to 
-create an MPI layer inside system, that would increase the speed of computations by enhancing quality of inter-cluster communication.
+using clustering algorithm, between several computational nodes, which are communicating with each other with the use of MPI. Therefore, one of the main objectives will be to 
+create an MPI layer around the system, that would increase the speed of computations by enhancing quality of inter-cluster communication.
 
 There are currently several implementations of MPI to date, so here is a brief overview of available solutions.
 
@@ -260,13 +334,17 @@ These are the most notable ones that have a direct connection to my project.
 \begin{itemize}
 \item{\textbf{Izhikevich's large scale model for simulating mammalian thalamocortical systems}}
 
-The work by Eugene Izhikevich\cite{EugeneM.Izhikevich2008}, though being mostly focused on the research of brain dynamics, showed that clusterisation of the network system across several processors would result in much higher throughput rate for a large scale network - million of neurons, tens of millions of neuron compartmentss and almost half a billion synapses. In this particular case C with MPI implementation was used to allow for inter-cluster communication, and it allowed the researchers to scale the time needed for calculation of one sub-millisecond time-step for this type of network to one minute.
+The work by Eugene Izhikevich, though being mostly focused on the research of brain dynamics, showed that clusterisation of the network system across several processors would result in much higher throughput rate for a large scale network - million of neurons, tens of millions of neuron compartments and almost half a billion synapses.
+
+In this particular case C with MPI implementation was used to allow for inter-cluster communication, and it allowed the researchers to scale the time needed for calculation of one sub-millisecond time-step for this type of network to one minute.\cite{EugeneM.Izhikevich2008}
 
 \item{\textbf{IBM cortical simulator project (C2)}}
 
-Research conducted by a group of scientists from the IBM Research Centre in Almaden\cite{DharmendraS.Modha2007} focused on creation of a platform capable of simulating cerebral cortex activity. Consequently, due to extremely large scale of simulation - in this project more than 55 million Izhikevich neurons were simulated within one network - and availability of clusters within the centre, a distributed approach was applied with the use of MPI. When applied to this problem, cluster mapping managed to achieve balanced workload across the network, as well as the uniform inhibitory neuron distribution. The reason the latter point mattered in the simulation is the fact that more than 60\% of firing was inhibitory - therefore, incorrectly distributed neuron set would have a significant effect on results.
+Research conducted by a group of scientists from the IBM Research Centre in Almaden focused on creation of a platform capable of simulating cerebral cortex activity. Consequently, due to extremely large scale of simulation - in this project more than 55 million Izhikevich neurons were simulated within one network - and availability of clusters within the centre, a distributed approach was applied with the use of MPI.
+
+When applied to this problem, cluster mapping managed to achieve balanced workload across the network, as well as the uniform inhibitory neuron distribution. The reason the latter point mattered in the simulation is the fact that more than 60\% of firing was inhibitory - therefore, incorrectly distributed neuron set would have a significant effect on results.\cite{DharmendraS.Modha2007}
 
 \item{\textbf{Neuromorphic model for GPGPU cluster}}
 
-Simulator produced by Bing Han and Tarek Taha aimed at the speedup of simulations with Izhikevich and Hodgkin-Huxley neuron models\cite{TarekM.Taha2010}. Use of GPGPUs and multi-threaded MPI provided heterogeneous  clusters and per-cluster computational capacity, and clustering algorithm ensured correct distribution of neurons in accordance to the 2 layers present in the system. As a result, a significant speedup was achieved in computation, factor of 177.0 for Hodgkin-Huxley and 24.6 for Izhikevich neurons, for the task of image recognition.
+Simulator produced by Bing Han and Tarek Taha aimed at the speedup of simulations with Izhikevich and Hodgkin-Huxley neuron models. Use of GPGPUs and multi-threaded MPI provided heterogeneous  clusters and per-cluster computational capacity, and clustering algorithm ensured correct distribution of neurons in accordance to the 2 layers present in the system. As a result, a significant speedup was achieved in computation, factor of 177.0 for Hodgkin-Huxley and 24.6 for Izhikevich neurons, for the task of image recognition.\cite{TarekM.Taha2010}
 \end{itemize}

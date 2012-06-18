@@ -61,45 +61,44 @@ After thorough research conducted into the use of MPI protocol, create a simulat
 
 \item{\textbf{Implementation of the full non-constrained communication between the nodes within the network}}
 
-Having the basic distribution system created, integrate the inter-node communication system that would allow subsystems to pass the internal spike data during simulations, while main class synchronizes the steps of all simulations by
-waiting for all of the communication to end, and advancing simulation one step further.
+Having the basic distribution system created, integrate the inter-node communication system that would allow subsystems to pass the internal spike data during simulations, while main class synchronizes the steps of all simulations by waiting for all of the communication to end, and then advancing simulation one step further.
 
 \begin{figure}[h!]
 \begin{center}
 \includegraphics[scale = 0.7]{images/design_stage_3.png}
 \end{center}
-\caption{Schematic model of step 2}
+\caption{Schematic model of step 3}
 \end{figure}
 
 \end{enumerate}
 
-Accomplishing all of these steps yields a fully working distributed implementation of the target system. It is worth noting that though this design is quite schematic, the results of the actual implementation if broken into steps were closely related to those presented by this plan.
+Accomplishing all of these steps yields a fully working distributed implementation of the target system. It is worth noting that though this design is quite schematic, the results of the actual implementation if broken into steps were closely related to the pattern presented by this plan.
 
-\subsection{Separation from the Core NeMo System}
+\subsection{Separation from the core NeMo System}
 
 This section covers the structure of design that allows the distributed version be built on top of NeMo simulator without altering it.
 
-\begin{figure}[h]
+\begin{figure}[h!]
 \begin{center}
-\includegraphics[scale = 0.5]{images/placeholder.png}
+\includegraphics[scale = 0.4]{images/core_simulation.png}
 \end{center}
-\caption{NeMo simulation core}
+\caption{NeMo core simulation design}
 \end{figure}
 
-These classes are the core of the NeMo functionality, as they comprise all the data sets needed for the correct simulation. Therefore, in order to enable the distributed version to run separately, i.e. without interfering with the data innate to these classes, it is essential to design the system around those. In other words, the correct design must not alter internal structure of this set of classes.
+These three classes are the core of the NeMo functionality, as they comprise all the data sets needed for the correct simulation. Therefore, in order to enable the distributed version to run separately, i.e. without interfering with the data innate to these classes, it is essential to design the system around those. In other words, the correct design must not alter internal structure of this set of classes.
 
 In order to make the project meet this target, the structure has been developed with a strict guidance of publicly accessible properties of NeMo simulation classes. Here is the result:
 
-\begin{figure}[h]
+\begin{figure}[h!]
 \begin{center}
-\includegraphics[scale = 0.5]{images/placeholder.png}
+\includegraphics[scale = 0.5]{images/distributed_version_separated_design.png}
 \end{center}
 \caption{Distributed simulation design}
 \end{figure}
 
 As it can be easily observed, the design of the distributed version treats the core simulation classes as separate entities, only interacting with them through the NeMo-specified functionality and set of public methods, already present in them. To summarise, the MPI Layer wraps around the simulation classes and enables communication by passing input and output data between separate NeMo simulations.
 
-\subsection{Mapping}
+\subsection{Cluster Mapping}
 
 In this section, the structure of the mapper class will be discussed. The actual clustering function will be expressed in detail later, in Implementation.
 
@@ -109,9 +108,9 @@ Mapper class design has three main requirements it has to satisfy: correct imple
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale = 0.5]{images/placeholder.png}
+\includegraphics[scale = 0.4]{images/mapper_design.png}
 \end{center}
-\caption{Mapping scheme}
+\caption{Mapper class design}
 \end{figure}
 
 The core functionality of the mapper requires to have a storage for neuron global-to-local and local-to-global mappings. This is accomplished by implementing two arrays that are populated during the simulation setup stage via interaction with the NeMo network class. The choice of using arrays was made as they are easy to access and relatively simple for compression, therefore meeting two goals at once.
@@ -124,10 +123,12 @@ The core functionality of the mapper requires to have a storage for neuron globa
 \begin{center}
 \includegraphics[scale = 1]{images/placeholder.png}
 \end{center}
-\caption{Mapping scheme}
+\caption{Final project design}
 \end{figure}
 
-By comprising all of these findings into one solution, the final design of the system was built. It has most of NeMo core functionality and provides the distributed version of simulation that could be mapped onto any number of processes.
+By comprising all of these findings into one solution, the final design of the system was built. It has most of NeMo core functionality and provides the distributed version of simulation that could be mapped onto any number of processes. This design satisfies all of the requirements set by the project and, once implemented, generates the appropriate solution to the given problem.
+
+\clearpage
 
 \section{Alternative Solutions}
 

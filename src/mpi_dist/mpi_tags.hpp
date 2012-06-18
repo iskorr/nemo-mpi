@@ -15,6 +15,5 @@
 #define TOTAL_NEURONS_TAG 11
 #define MAPPER_LENGTH_TAG 12
 #define MAPPER_DATA_TAG 13
-#define FIRINGS 14
-#define SPIKES 15
+#define SPIKES 14
 #endif

@@ -14,7 +14,7 @@ namespace nemo {
 
 WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workerCount) : mapper(workerCount-1), rank(rank), reply(1), workers(workerCount), fired(0), spikes(0), spikesPerStep(0), firedPerStep(0)
 {
-	;
+	sent = 0, received = 0;
 	nemo::Network* net = new nemo::Network();
 	nemo::Configuration conf;
 	receiveMapper();
@@ -40,16 +40,15 @@ void
 WorkerSimulation::runSimulation(nemo::Simulation* sim)
 {
 	unsigned stepOK;
-	MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
-	while(stepOK == 0) {
+	while(true) {
 		vector <pair<unsigned,float> > stim (stim_template);
 		enqueueIncomingSpikes(sim, stim);
+		MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
+		if (stepOK > 1) break;
 		distributeOutgoingSpikes(sim->step(stim));
 		MPI::COMM_WORLD.Send(&firedPerStep, 1, MPI::INT, MASTER, SIM_STEP);
 		firedPerStep = 0, spikesPerStep = 0;
-		MPI::COMM_WORLD.Bcast(&stepOK, 1, MPI::INT, MASTER);
 	}
-	MPI::COMM_WORLD.Send(&fired, 1, MPI::INT, MASTER, FIRINGS);
 	MPI::COMM_WORLD.Send(&spikes, 1, MPI::INT, MASTER, SPIKES);
 }
 
@@ -87,30 +86,39 @@ WorkerSimulation::distributeOutgoingSpikes(const vector <unsigned>& output)
 {
 	firedPerStep = output.size();
 	fired += firedPerStep;
-	unsigned msg,count = 0;
-	int buf;
+	int msg;
 	for(unsigned id = 0; id < output.size(); ++id) {
 		unsigned fired = output[id];
 		for (unsigned target = 0; target < outgoingSynapses[fired].size(); ++target) {
 			msg = mapper.mapGlobal(fired,rank);
 			send_request = MPI::COMM_WORLD.Isend(&msg, 1, MPI::INT, outgoingSynapses[fired][target], COMMUNICATION_TAG);
+			sent++;
 		}
 		send_request.Wait(status);
 	}
-	msg = -1;
-	for (unsigned worker = 1; worker < workers; ++worker) MPI::COMM_WORLD.Isend(&msg, 1, MPI::INT, worker, COMMUNICATION_TAG);
-	unsigned worker = 1;
-	while(count < workers-2) {
+	int buf, end = -1;
+	for (unsigned worker = 1; worker < workers; ++worker) {
+		if (rank != worker) MPI::COMM_WORLD.Isend(&end, 1, MPI::INT, worker, COMMUNICATION_TAG);
+	}
+	send_request.Wait(status);
+	unsigned worker = 1, count = workers-2;
+	while(count > 0) {
 		if (rank == worker && worker < workers-1) worker++;
 		else if (worker == workers) break;
-		MPI::COMM_WORLD.Recv(&buf, 1, MPI::INT, worker, COMMUNICATION_TAG, status);
+		recv_request = MPI::COMM_WORLD.Irecv(&buf, 1, MPI::INT, worker, COMMUNICATION_TAG);
+		if (!MPI::COMM_WORLD.Iprobe(worker, COMMUNICATION_TAG, status)) {
+			MPI_Cancel(recv_request);
+			count--;		
+		}
 		if (buf > -1) {
 			incoming.push_back(buf);
+			received++;
 		} else {
-			count++;
+			count--;
 			worker++;
 		}
 	}
+	
 }
 
 

@@ -1,18 +1,29 @@
 #include "SimulationMPI.hpp"
+#include <iostream>
+#include <fstream>
 #include <string>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #define MASTER 0
 using namespace std;
 
 namespace nemo {
 	namespace mpi_dist {
 
-SimulationMPI::SimulationMPI(const nemo::Network *net, const nemo::Configuration& conf, int argc, char* argv [], unsigned duration, bool timed, const string& file)
+SimulationMPI::SimulationMPI(const nemo::Network *net, const nemo::Configuration& conf, int argc, char* argv [], unsigned duration, bool timed, const string& filename)
 {
 	MPI::Init(argc, argv);
 	unsigned rank = MPI::COMM_WORLD.Get_rank();
 	unsigned workers = MPI::COMM_WORLD.Get_size();
 	if (rank == MASTER) {
-		nemo::mpi_dist::MasterSimulation(*net, conf, duration, timed, file);
+		ofstream file;
+		file.open(filename.c_str(), fstream::app);
+		ostream& out = filename.empty() ? cout : file;
+		nemo::mpi_dist::MasterSimulation sim(*net, conf);
+		if (timed) simulateTimed(sim, duration, out);
+		else simulateStepped(sim, duration, out);
+		file.close();
 	} else {
 		nemo::mpi_dist::WorkerSimulation(rank, workers);
 	}
@@ -22,6 +33,36 @@ SimulationMPI::SimulationMPI(const nemo::Network *net, const nemo::Configuration
 SimulationMPI::~SimulationMPI()
 {
 	;
+}
+
+void
+SimulationMPI::simulateTimed(nemo::mpi_dist::MasterSimulation& master, unsigned duration, ostream& out)
+{
+	unsigned totalfiring = 0;
+	nemo::Timer timer;
+	timer.reset();
+	while(timer.elapsedWallclock() < duration) {
+		totalfiring += master.step();
+		timer.step();
+	}
+	unsigned long runtime = timer.elapsedWallclock();
+	unsigned totalspiking = master.endSimulation();
+	out << master.getNeuronCount() << " " << runtime << " " << timer.elapsedSimulation() << " " << totalfiring << " " << totalspiking << "\n";
+}
+
+void
+SimulationMPI::simulateStepped(nemo::mpi_dist::MasterSimulation& master, unsigned duration, ostream& out)
+{
+	unsigned totalfiring = 0;
+	nemo::Timer timer;
+	timer.reset();
+	while(timer.elapsedSimulation() < duration) {
+		totalfiring += master.step();
+		timer.step();
+	}
+	unsigned long runtime = timer.elapsedWallclock();
+	unsigned totalspiking = master.endSimulation();
+	out << master.getNeuronCount() << " " << runtime << " " << timer.elapsedSimulation() << " " << totalfiring << " " << totalspiking << "\n";
 }
 
 	}

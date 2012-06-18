@@ -30,7 +30,8 @@ class WorkerSimulation {
 		
 		/* MPI Communication capabilities */
 		MPI::Status status;
-		MPI::Request send_request;
+		MPI::Request recv_request, send_request;
+		unsigned sent, received;
 
 		/* Mapper for the network */
 		MapperSim mapper;
