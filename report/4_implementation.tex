@@ -137,33 +137,131 @@ Clustering implementation is dependent on the algorithm introduced by Mark Newma
 
 Major part of Newman's research concentrates on finding communities in the network structures\cite{NewmanComm}. \emph{Community structure} is a feature of a graph that shows the gathering of vertices into groups with high connectivity. This feature is best described by modularity, the measure of modular division of a particular network into subnets with high edge density.
 
-Formula for modularity is:
-\begin{equation}\end{equation}
+Formula for modularity is (for a network of $n$ vertices):
+\begin{equation}Q = \frac{1}{4m}\Sigma_{ij}(A_{ij} - \frac{k_{i}k_{j}}{2m})s_{i}s_{j}\end{equation}\cite{Newman2006}
+where $m$ is total number of edges, $k_{i}$ and $k_{j}$ are the degrees of the corresponding neurons. Notice that $\frac{1}{4m}$ is a conventional leading factor - it is there to support previous definition of modularity, given by Newman and Girvan\cite{Newman2004}.
 
-Newman's algorithm ("Method of Optimal Modularity"\cite{Newman2006}) is a way of determining the natural division of graph's vertices into several non-overlapping communities, based on the modularity measure. 
+Newman's algorithm ("Method of Optimal Modularity"\cite{Newman2006}) is a way of determining the natural division of graph's vertices into several non-overlapping communities, based on the modularity measure. Its structure is different to the older algorithm used for finding communities\cite{NewmanAlgo}, as the latter was more scientifically focused, therefore lacked certain capabilities for implementation in the parallel computation design.
+
+\clearpage
+
+The step structure of the algorithm is as follows:
 
 \begin{enumerate}
-\item{Create an adjancency matrix of the network}
-\item{Matrix Q is created with the same dimensions as the adjacency one. The values in Q matrix are set through using equation: 
+\item{\textbf{Create an adjancency matrix of the network}}
+
+Create and populate the adjacency matrix for the network based on the information about edges.
+
+\item{\textbf{Create and populate a modularity matrix of the network}}
+
+Matrix $Q$ is created with the same dimensions as the adjacency one. Its values are set through using equation:
+
 \begin{equation}Q[i][j] = A[i][j] - \frac{k_{i}k_{j}}{2m}\end{equation}
-where $k_{i}$ and $k_{j}$ degrees of corresponding neurons, and m is the total number of synapses}
-\item{For the resulting Q matrix the dominating eigen vector has to be generated - this is done through the use of power-iteration algorithm}
-\item{The values of eigenvector correspond to the split of this network into two parts - any further division is done by applying this algorithm again}
+
+Notice that the conventional factor is abolished - it does not affect the result, so its absence will improve execution time.
+
+\item{\textbf{Generate a leading eigenvector for the modularity matrix}}
+
+For the resulting Q matrix the dominating eigen vector has to be generated - this is done through the use of power-iteration algorithm\cite{VonMises1929}.
+
+Power iteration algorithm: $b_{k+1} = \frac{Ab}{||Ab||}$
+
+\item{\textbf{Eigenvector values are used to split the network into two partitions}}
+
+The values of eigenvector correspond to the split of this network into two parts - negative and positive values separate vertices into two groups. In case, more groups are needed, the algorithm is performed again on the partitions.
+
 \end{enumerate}
+
+As it can be observed Newman's algorithm is robust and relatively easy to implement. Moreover, it possesses another feature - whenever the connectivity of the network is all-to-all or close to this state, the resulting eigenvector would have only positive values - therefore, indicating an indivisible graph, i.e. a graph without a natural community separation. This certain feature could be used later for improvement - specifically for the purpose of finding an optimal number of clusters that a particular network has to be split into.
 
 \subsection{Mapper integration}
 
+The implementation of Newman's algorithm into the Mapper class is essentially translation of all of the algorithmic steps into the code. The focus, therefore, should be on the matrix updates and the power-iteration function.
+
+The main difference from the actual algorithm would be the use of one matrix instead of two - this is done to prevent probable memory leaks, as testing with large scale networks showed that matrices for big number of neurons occupy too much RAM, causing the Master process to get killed. Therefore, current implementation has a threshold value of 31000 neurons, after which a simple uniform distribution is used for clustering.
+
+This is the implementation of adjancency and modularity (both within $q\_matrix$) update.
+
+\begin{center}
+\lstset{
+    caption = Code for Matrix update,
+    basicstyle=\ttfamily\footnotesize\bfseries,
+    frame=tb
+}
+\begin{lstlisting}
+...
+/* Parameters initialisation */
+for(i = 0; i < ncount; ++i) {
+	vector<synapse_id> synapses = net.getSynapsesFrom(partition[i]);
+	for (j = 0; j < synapses.size(); ++j) {
+		unsigned globtarget = net.getSynapseTarget(synapses[j]);
+		if (auxMap[globtarget] == partcount) {
+			unsigned target = backMap[globtarget];
+			q_matrix[i][target]++;
+			q_matrix[target][i]++;
+			degrees[i]++;
+			degrees[target]++;
+			edges++;
+		}
+	}
+}
+for (i = 0; i < ncount; ++i) {
+	for (j = 0; j < ncount; ++j) {
+		if (i != j) q_matrix[i][j] = (q_matrix[i][j] - (float)(degrees[i]*degrees[j])/(2*edges));
+		else q_matrix[i][j] = STRENGTH;
+	}
+}
+\end{lstlisting}
+\end{center}
+
+In the code shown above, the first loop initialises the adjacency matrix - it is done through interaction with the Network class. For each of the synapses, source and target values are checked to be within the partition. Once proved to be correct, values for adjacency, degree of vertices and number of edges are updated.
+
+The second loop constructs modularity matrix on top of the adjacency one. The updates are done in accordance to the modularity formula, mentioned before (4.5).
+The constant STRENGTH is set for all $q\_matrix_{ii}$ objects for the purpose of better computations, as original algorithm did not permit loops.
+Also, note that due to big size of all created data structures, each call for $allocateNeurons()$ is ending with a set of destructors.
+
+Once the $q\_matrix$ values are all set, the only thing left to do - is to calculate the dominant eigen vector of this matrix:
+
+\begin{center}
+\lstset{
+    caption = Power-Iteration (Von Moses) algorithm,
+    basicstyle=\ttfamily\footnotesize\bfseries,
+    frame=tb
+}
+\begin{lstlisting}
+float* eigenvector = new float [ncount];
+float* tmp = new float [ncount];
+...
+/* Parameters initialisation */
+while(step < THRESHOLD) {
+	norm_sq=0;
+	for (i = 0; i < ncount; ++i) {
+        	tmp[i] = 0;
+       		for (j = 0; j < ncount; ++j) tmp[i] += q_matrix[i][j] * eigenvector[j];
+		norm_sq += tmp[i]*tmp[i];
+	}
+   	norm = sqrt(norm_sq);
+	for (i = 0; i < ncount; ++i) eigenvector[i] = tmp[i]/norm;
+	step++;
+}
+\end{lstlisting}
+\end{center}
+
+This part of code is responsible for the eigen vector generation. Eigenvector is first set to {$1,1...1$} and then passed to the while loop for several steps of power iteration. The number of steps, THRESHOLD constant, after thorough testing, is set to 10, as this number of iteration steps provides a compromise between accuracy and heaviness of computation.
+
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale = 0.5]{images/placeholder.png}
+\includegraphics[scale = 0.5]{images/clustering_recursive.png}
 \end{center}
-\caption{Clustering function}
+\caption{Representation of a recursive call to the clustering function for 5 clusters}
 \end{figure}
 
 \section{Alternative Solutions}
 
 \begin{itemize}
-\item{Use of Boost libraries}
+\item{\textbf{Use of Boost MPI libraries}}
 
-Use of Boost libraries was not possible early in the project due to the build fails - after a certain checkpoint it was already inefficient to regurgitate through the whole code to recreate the capabilities.
+The idea of this proposal was that boost MPI libraries comprise all needed functionality in an easy and well-represented way. However, use of both Boost and CMake caused numerous build fails, which in the end, outweighed the positive side. Moreover, most of the system that was implemented already at that point was written with MPICH - therefore, a change of implementation library would consume more time.
+
+\item{}
 \end{itemize}

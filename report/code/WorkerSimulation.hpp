@@ -64,7 +64,7 @@ class WorkerSimulation {
 
 		/* Auxiliary functions for synapse distribution */
 		std::vector <inc_syn> getSynapseData(unsigned source);
-		void assignSynapse(nemo::Network* net, std::vector<std::string> params);
+		void assignSynapse(nemo::Network* net, float* params);
 		void addIncomingSynapse(unsigned source, unsigned target, unsigned delay, float weight);
 		void addOutgoingSynapse(unsigned source, unsigned target);
 

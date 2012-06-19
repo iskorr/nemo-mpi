@@ -12,12 +12,14 @@ using namespace std;
 namespace nemo {
 	namespace mpi_dist {
 
-MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configuration& conf) : workers(MPI::COMM_WORLD.Get_size()), neuronCount(net.neuronCount()), verbose(false)
+MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configuration& conf) : workers(MPI::COMM_WORLD.Get_size()), verbose(true)
 {
-	unsigned ok, worker = 1;
-	MapperSim mapper(net, workers-1);
-	
 	if(verbose) cout << "Master initialised" << endl;
+	unsigned ok, worker = 1;
+	if(verbose) cout << "Clustering...";
+	MapperSim mapper(net, workers-1);
+	if(verbose) cout << "................complete" << endl;
+	
 	distributeMapper(mapper);
 	distributeConfiguration(conf);
 	distributeNeurons(net, mapper);
@@ -25,7 +27,7 @@ MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configu
 
 	for (; worker < workers; ++worker) {
 		MPI::COMM_WORLD.Recv(&ok, 1, MPI::INT, worker, DISTRIBUTION_COMPLETE, status);
-		if (ok == 0) break;
+		if (ok == 1) break;
 	}
 	if(verbose) {
 		if (worker >= workers-1) cout << "All the workers are set up for simulation" << endl;
@@ -60,12 +62,9 @@ MasterSimulation::distributeConfiguration(const nemo::Configuration& conf)
 	if(verbose) cout << "Configuration distribution...";
 	string config = encodeConfiguration(conf);
 	unsigned strlen = config.size()+1;
-	char msg [strlen];
-	msg[strlen-1]=0;
-	memcpy(msg,config.c_str(),strlen-1);
 	for(unsigned worker = 1; worker < workers; ++worker) {
 		MPI::COMM_WORLD.Send(&strlen, 1, MPI::INT, worker, CONFIGURATION_LENGTH_TAG);
-		MPI::COMM_WORLD.Send(&msg, strlen, MPI::CHAR, worker, CONFIGURATION_DATA_TAG);
+		MPI::COMM_WORLD.Send(config.c_str(), strlen, MPI::CHAR, worker, CONFIGURATION_DATA_TAG);
 	}
 	if(verbose) cout << "complete" << endl;
 }
@@ -80,7 +79,7 @@ MasterSimulation::distributeNeurons(const nemo::Network& net, MapperSim& mapper)
 		neuronsPerWorker = workerNeurons.size();
 		MPI::COMM_WORLD.Send(&neuronsPerWorker, 1, MPI::INT, worker, NEURON_COUNT_TAG);
 		for (unsigned nidx = 0; nidx < neuronsPerWorker; ++nidx) {
-			sendData(encodeNeuron(getNeuronIdx(workerNeurons[nidx], net),workerNeurons[nidx]), NEURON_LENGTH_TAG, NEURON_DATA_TAG, worker);
+			MPI::COMM_WORLD.Send(getNeuronIdx(workerNeurons[nidx], net), 8, MPI::FLOAT, worker, NEURON_DATA_TAG);
 		}
 	}
 	if(verbose) cout << ".......complete" << endl;
@@ -90,19 +89,21 @@ void
 MasterSimulation::distributeSynapses(const nemo::network::NetworkImpl& net, const MapperSim& mapper)
 {
 	if(verbose) cout << "Synapses distribution...";
-	unsigned source,target,ok = 0;
+	unsigned source,target;
+	float* encodedSynapse;
 	for(nemo::network::synapse_iterator s = net.synapse_begin(); s != net.synapse_end(); ++s) {
 		source = mapper.rankOf(s->source);
 		target = mapper.rankOf(s->target());
+		encodedSynapse = encodeSynapse(s->source, s->target(), s->delay, s->weight(), s->plastic() == 0? 0 : 1);
 		if(source == target) {
-			sendSynapseData(encodeSynapse(s,1), target);
+			sendSynapseData(encodedSynapse, target);
 		} else {
-			sendSynapseData(encodeSynapse(s,2), target);
-			sendSynapseData(encodeSynapse(s,3), source);
+			sendSynapseData(encodedSynapse, source);
+			sendSynapseData(encodedSynapse, target);
 		}
 	}
-	ok = 1;
-	for (unsigned worker = 1; worker < workers; ++worker) MPI::COMM_WORLD.Send(&ok, 1, MPI::INT, worker, SYNAPSE_END_TAG);
+	encodedSynapse = encodeSynapse(-1,0,0,0,0);
+	for (unsigned worker = 1; worker < workers; ++worker) sendSynapseData(encodedSynapse,worker);
 	if(verbose) cout << ".....complete" << endl;
 }
 
@@ -158,32 +159,15 @@ void
 MasterSimulation::sendData(const string& data, unsigned length_tag, unsigned data_tag, unsigned worker)
 {
 	unsigned strlen = data.size()+1;
-	char msg [strlen];
-	msg[strlen-1]=0;
-	memcpy(msg,data.c_str(),strlen-1);
 	MPI::COMM_WORLD.Send(&strlen, 1, MPI::INT, worker, length_tag);
-	MPI::COMM_WORLD.Send(&msg, strlen, MPI::CHAR, worker, data_tag);
+	MPI::COMM_WORLD.Send(data.c_str(), strlen, MPI::CHAR, worker, data_tag);
 }
 
 void
-MasterSimulation::sendSynapseData(const string& data, unsigned worker)
+MasterSimulation::sendSynapseData(float* encodedSynapse, unsigned worker)
 {
-	unsigned ok = 0,strlen = data.size()+1;
-	char msg [strlen];
-	msg[strlen-1]=0;
-	memcpy(msg,data.c_str(),strlen-1);
-	MPI::COMM_WORLD.Send(&ok, 1, MPI::INT, worker, SYNAPSE_END_TAG);
-	MPI::COMM_WORLD.Send(&strlen, 1, MPI::INT, worker, SYNAPSE_LENGTH_TAG);
-	MPI::COMM_WORLD.Send(&msg, strlen, MPI::CHAR, worker, SYNAPSE_DATA_TAG);
+	MPI::COMM_WORLD.Send(encodedSynapse, SYNAPSE_ARGS, MPI::FLOAT, worker, SYNAPSE_DATA_TAG);
 }
-
-
-unsigned
-MasterSimulation::getNeuronCount()
-{
-	return neuronCount;
-}
-
 
 	} // namespace mpi_dist
 } // namespace nemo
