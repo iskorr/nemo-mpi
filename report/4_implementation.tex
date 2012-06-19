@@ -131,18 +131,37 @@ After finishing these two steps, the function returns, leading to the end of the
 
 \section{Clustering}
 
-Mapping algorithm implementation
+Clustering implementation is dependent on the algorithm introduced by Mark Newman\cite{Newman2006}. This section will provide the mathematical overview of this algorithm and its implementation within Mapper class.
 
 \subsection{Newman's Algorithm}
 
-Newman's work in detail
+Most of Newman's work concentrates on finding communities in the network structures. on the modularity as the main measure for network clustering.
+
+
+Newman's algorithm:
+
+\begin{enumerate}
+\item{Create an adjancency matrix of the network}
+\item{Matrix Q is created with the same dimensions as the adjacency one. The values in Q matrix are set through using equation: 
+\begin{equation}Q[i][j] = A[i][j] - \frac{k_{i}k_{j}}{2m}\end{equation}
+where $k_{i}$ and $k_{j}$ degrees of corresponding neurons, and m is the total number of synapses}
+\item{For the resulting Q matrix the dominating eigen vector has to be generated - this is done through the use of power-iteration algorithm}
+\item{The values of eigenvector correspond to the split of this network into two parts - any further division is done by applying this algorithm again}
+\end{enumerate}
 
 \subsection{Mapper integration}
 
-His algorithm implemented with code snippets
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale = 0.5]{images/placeholder.png}
+\end{center}
+\caption{Clustering function}
+\end{figure}
 
 \section{Alternative Solutions}
 
 \begin{itemize}
 \item{Use of Boost libraries}
+
+Use of Boost libraries was not possible early in the project due to the build fails - after a certain checkpoint it was already inefficient to regurgitate through the whole code to recreate the capabilities.
 \end{itemize}
