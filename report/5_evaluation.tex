@@ -91,20 +91,75 @@ From these graphs, it can be concluded that synaptic distribution depends more o
 
 \section{Simulation Time}
 
-This section attempts to collect and evaluate the results of multiple distributed simulations against the original NeMo simulation, and show the particular differences through performance.
+This section attempts evaluate the collected results of running multiple distributed simulations against the original NeMo simulation, and show the particular differences through simulation running time. The results of this evaluation show that even though the system has been implemented, there is still much more work on its optimisation.
 
 \subsection{Number of neurons}
 
-Graphs and explain how the evaluated trends on the graphs show efficiency of the algorithm against number of neurons
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale = 0.4]{images/distributed_neurons.png}
+\end{center}
+\caption{Comparison of setup time to the number of neurons, synapses and processes}
+\end{figure}
+
+The set constants: synapses = 1000, steps = 5000.
+
+This comparison graph shows that from the point of performance, the distributed version does not lose much of its potential - the communication overhead does not highly correlate with the number of neurons. Therefore, potentially for a simulation of a much larger scale, the graph for a distributed simulation of 3 processes would go below the original NeMo graph. The reason for this proposition is that as the number of neurons grows the time taken for a simulation step on a single NeMo implementation grows with a factor of this increase. On the other hand, the distributed version has a more fixed value of growth, and at the same time, the local simulations, depending on the number of clusters are much more computationally feasible as opposed to having one big simulation.
 
 \subsection{Number of synapses}
 
-Same - but now with varying neurons (need mapping implemented)s
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale = 0.4]{images/distributed_synapses.png}
+\end{center}
+\caption{Comparison of setup time to the number of neurons, synapses and processes}
+\end{figure}
+
+The set constants: neurons = 2000, steps = 500.
+
+This graph shows that synaptic density per neuron dramatically affects the external spike delivery. Even with the mapping algorithm implemented, the number of spikes fired is still difficult to handle within one simulation step. This particular set of results suggests that there could be much more work done on the inter-nodal communication engine. The graph could also suggest poor choice of constants, as the scope of this simulation is far too small to see the real impact of the distributed simulation. Therefore, potentially, a further set of measurements should be taken to provide a better overall picture.
 
 \subsection{Number of steps}
 
-Runtime of the simulation in focus, no of steps constant
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale = 0.4]{images/distributed_steps.png}
+\end{center}
+\caption{Comparison of setup time to the number of neurons, synapses and processes}
+\end{figure}
+
+The set constants: neurons = 1000, synapses = 1000.
+
+Through the graph of steps against simulation time it can be easily observed that distributed implementation has a constant per-step time. At the same time the simulation time for the original NeMo simulation went up significantly with the number of steps. This could in turn suggest that as the simulation progresses the number of spikes increases dramatically, causing the decrease in speed of the NeMo simulation. Therefore, if mapping is correctly implemented, as simulation progresses the work that has to be done would be significantly smaller on the sub-simulations, and the external spike delivery will not be ruined by the sudden peaks.
+
+\clearpage
 
 \section{Network throughput during simulation}
 
-Firing and spike delivery through the network - how does it compare.
+\begin{figure}[ht]
+\begin{minipage}[b]{0.5\linewidth}
+\centering
+\includegraphics[width=\textwidth]{images/neuron_firing.png}
+\caption{Neuron number against firing}
+\label{fig:figure1}
+\end{minipage}
+\begin{minipage}[b]{0.5\linewidth}
+\centering
+\includegraphics[width=\textwidth]{images/steps_firing.png}
+\caption{Number of steps against firing}
+\label{fig:figure3}
+\end{minipage}
+\end{figure}
+
+These two figures show linear proportionality - amount of firing is directly proportional to the number of neurons and number of steps.
+The third figure, however, gives a slightly different information. It shows that the synaptic density is not directly proportional to firing capacity.
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale = 0.5]{images/synapses_firing.png}
+\end{center}
+\caption{Synaptic density against firing}
+\end{figure}
+
+
+

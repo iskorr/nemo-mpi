@@ -100,14 +100,14 @@ main(int argc, char* argv[])
 {
 	namespace po = boost::program_options;
 	char* name;
-	unsigned stime = 0;
+	unsigned steps = 500;
 	if (argc > 1) name = argv[1];
 	else {
 		name = new char [6];
 		name[5] = '\0';
 		memcpy (name, "t.txt", 5);
 	}
-	if (argc > 2) stime = ::atoi(argv[2]);
+	if (argc > 2) steps = ::atoi(argv[2]);
 	try {
 
 		po::options_description desc = commonOptions();
@@ -123,7 +123,7 @@ main(int argc, char* argv[])
 		unsigned ncount = vm["neurons"].as<unsigned>();
 		unsigned scount = vm["synapses"].as<unsigned>();
 		unsigned dmax = vm["dmax"].as<unsigned>();
-		unsigned duration = 500; //vm["duration"].as<unsigned>();
+		unsigned duration = steps; //vm["duration"].as<unsigned>();
 		unsigned stdp = vm["stdp-period"].as<unsigned>();
 		unsigned verbose = vm["verbose"].as<unsigned>();
 		bool runBenchmark = vm.count("benchmark") != 0;
@@ -154,7 +154,7 @@ main(int argc, char* argv[])
 			unsigned long time = timer.elapsedWallclock();
 			std::cout << time << std::endl;
 			if (output.is_open()) {
-				output << ncount << " " << time << std::endl;
+				output << ncount << " " << scount << " " << time << " " << steps << std::endl;
 				output.close();
 			}
 		}
