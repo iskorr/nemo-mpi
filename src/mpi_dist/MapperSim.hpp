@@ -22,6 +22,7 @@ private:
 	*/
 	std::vector <unsigned>* neuronMap;
 	std::vector <unsigned> backMap;
+	std::vector <int> auxMap;
 public:
 	/* Different constructors for Master and workers */
 	MapperSim(unsigned workerCount);
@@ -43,7 +44,7 @@ public:
 	void allocateNeuronsUniform(const nemo::Network& net);
 
 	/* Cluster mapping function - employs Newman's algorithm through calculating Q (modularity matrix) and the dominant eigenvector for it */
-	void allocateNeurons(const nemo::Network& net, unsigned ncount);
+	void allocateNeurons(const nemo::Network& net, std::vector<unsigned>& partition, unsigned clusters, unsigned starting_cluster, int partcount);
 };
 	} // namespace mpi_dist
 } // namespace nemo

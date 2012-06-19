@@ -116,6 +116,32 @@ Mapper class design has three main requirements it has to satisfy: correct imple
 
 The core functionality of the mapper requires to have a storage for neuron global-to-local and local-to-global mappings. This is accomplished by implementing two arrays that are populated during the simulation setup stage via interaction with the NeMo network class. The choice of using arrays was made as they are easy to access and relatively simple for compression, therefore meeting two goals at once.
 
+\section{Alternative Solutions}
+
+Throughout the stage of designing of the distributed version, there have been several possibilities of use of alternative solutions for the given task. Here, explanation of choice made at these points will be given.
+
+\begin{itemize}
+
+\item{\textbf{Non-hierarchical model for distributed system}}
+
+Non-hierarchical in this context means that there would be no division master-worker between the processes - all MPI Simulation classes would be constructed in a way to support the Master capabilities - therefore achieving maximum utilisation of available resources. This approach, however, had a big overhead in terms of synchronisation, as the step function would not be as easy to implement. Moreover, the initial split of initialisation parameters would also cause an overhead in simulation - as it would have to be done inside each Worker simulation.
+
+Therefore, the hierarchical approach was taken further into development for its distribution and synchronisation capabilities.
+
+\item{\textbf{Single mapper, accessible across the network}}
+
+This solution aimed at disposing of necessity to distribute the mapper across the workers. This would save space and make simulation setup time shorter, however, a lot more network capacity would be used for queries, more time would be needed to execute those and, finally, separate mapper, being a shared resource would definitely cause a bottleneck for a parallel simulation.
+
+Therefore, after careful consideration, this idea was discarded in favor of distributing the same mapper to all workers - and by doing this increasing the speed of simulation step communication.
+
+\item{\textbf{Provide the inner set of variables of the network to the mapper during initialisation}}
+
+If this step is taken, less time would be needed for mapper generation - however, this would also breach the policy of non-interference with the innate NeMo properties, by altering the adding more public internal functions.
+
+This proposal made one of the objectives unsatisfiable, thus, was not the most preferred for the aim of the project - as a result the Mapper class was constructed to interact with the public methods of Network only.
+
+\end{itemize}
+
 \clearpage
 
 \section{Final Design}
@@ -127,22 +153,6 @@ The core functionality of the mapper requires to have a storage for neuron globa
 \caption{Final project design}
 \end{figure}
 
-By comprising all of these findings into one solution, the final design of the system was built. It has most of NeMo core functionality and provides the distributed version of simulation that could be mapped onto any number of processes. This design satisfies all of the requirements set by the project and, once implemented, generates the appropriate solution to the given problem.
+By comprising all of the objective-fulfilling designs from parts 3.2.1-3.2.3 into one solution, the final design of the system was built. The diagram shows the high level design structure, full properties of each part are not shown.
 
-\clearpage
-
-\section{Alternative Solutions}
-
-Throughout the stage of designing of the distributed version, there have been several possibilities of use of alternative solutions for the given task. Here, explanation of choice made at these points will be given.
-
-\begin{itemize}
-
-\item{\textbf{Single mapper, accessible across the network}}
-
-This solution aimed at disposing of necessity to distribute the mapper across the workers. This would save space and make simulation setup time shorter, however, a lot more network capacity would be used for queries, more time would be needed to execute those and, finally, separate mapper, being a shared resource would definitely cause a bottleneck for a parallel simulation.
-
-\item{\textbf{Provide the inner set of variables of the network to the mapper during initialisation}}
-
-If this step is taken, less time would be needed for mapper generation - however, this would also breach the policy of non-interference with the innate NeMo properties, by altering the adding more public internal functions.
-
-\end{itemize}
+It has most of NeMo core functionality and provides the distributed version of simulation that could be mapped onto any number of processes. This design satisfies all of the structural requirements set by the project and, once implemented, generates the appropriate solution to the given problem.

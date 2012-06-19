@@ -17,9 +17,6 @@ class MasterSimulation {
 		MasterSimulation(const nemo::Network &net, const nemo::Configuration& conf);
 		~MasterSimulation();
 
-		/* Return neuron count of the net */
-		unsigned getNeuronCount();
-
 		/* Simulation step 
 			returns the number of neurons fired */
 		unsigned step();
@@ -38,7 +35,7 @@ class MasterSimulation {
 		MPI::Status status;
 
 		/* Set of variables for the calculations some are set to be accessed by the MapperSim class */
-		unsigned workers, neuronCount;
+		unsigned workers;
 		bool verbose;
 
 		/* Distribution functions 
@@ -57,7 +54,7 @@ class MasterSimulation {
 
 		/* Helper functions for the data transmission */
 		void sendData(const std::string& data, unsigned length_tag, unsigned data_tag, unsigned worker);
-		void sendSynapseData(const std::string& data, unsigned worker);
+		void sendSynapseData(float* res, unsigned worker);
 
 };
 

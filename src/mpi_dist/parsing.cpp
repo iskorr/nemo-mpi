@@ -8,26 +8,6 @@
 using namespace std;
 
 string
-encodeNeuron(float* args, unsigned nidx)
-{
-	args[7] = nidx;
-	ostringstream input;
-	input << args[0];
-	for (unsigned i = 1; i < 8; ++i) input << "," << args[i];
-	string neuronData(input.str());
-	return neuronData;
-}
-
-float*
-decodeNeuron(const string& neuronData)
-{
-	vector<string> properties = decode(neuronData,",");
-	float* result = new float [properties.size()];
-	for (unsigned i = 0; i < properties.size(); ++i) result[i] = ::atof(properties[i].c_str());
-	return result;
-}
-
-string
 encodeConfiguration(const nemo::Configuration &conf)
 {
 	unsigned logging = 0;
@@ -95,21 +75,16 @@ decodeSTDP(nemo::Configuration &target, const string& stdp)
 	target.setStdpFunction(prefire,postfire,minEW,maxEW,minIW,maxIW);
 }
 
-string
-encodeSynapse(const nemo::network::synapse_iterator& s, unsigned type)
+float*
+encodeSynapse(int source, int target, unsigned delay, float weight, unsigned plastic)
 {
-	ostringstream input;
-	unsigned source = s->source;
-	int target = s->target();
-	unsigned delay = s->delay;
-	float weight = s->weight();
-	unsigned plastic = 0;
-	if (s->plastic()) plastic = 1;
-	if (type == 1) input << source << "," << target << "," << delay << "," << weight << "," << plastic;
-	else if (type == 2) input << (int)-(source+1) << "," << target << "," << delay << "," << weight << "," << plastic;
-	else if (type == 3) input << source << "," << (int)-(target+1) << "," << delay << "," << weight << "," << plastic;
-	string synapseData(input.str());
-	return synapseData;
+	float* res = new float [5];
+	res[0] = source;
+	res[1] = target;
+	res[2] = delay;
+	res[3] = weight;
+	res[4] = plastic;
+	return res;
 }
 
 vector<string>
@@ -121,7 +96,7 @@ encodeMapper(nemo::mpi_dist::MapperSim& mapper)
 	for (unsigned i = 0; i < workers; ++i) {
 		ostringstream input;
 		vector<unsigned> neurons = mapper.retrieveNeurons(i+1);
-		input << neurons[0];
+		if (!neurons.empty())input << neurons[0];
 		for (unsigned j = 1; j < neurons.size(); ++j) input << "," << neurons[j];
 		string mapData(input.str());
 		res[i] = mapData;

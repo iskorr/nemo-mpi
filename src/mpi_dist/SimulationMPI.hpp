@@ -13,6 +13,7 @@ public:
 	~SimulationMPI();
 private:
 	Timer timer;
+	unsigned neurons, synapses;
 	void simulateTimed(nemo::mpi_dist::MasterSimulation& master, unsigned duration, std::ostream& out);
 	void simulateStepped(nemo::mpi_dist::MasterSimulation& master, unsigned duration, std::ostream& out);
 };
