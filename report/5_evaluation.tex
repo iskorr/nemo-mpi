@@ -1,35 +1,97 @@
 \chapter{Evaluation}
 
-This chapter will cover the project from the point of the impact made, how well it fits within the current trends
+After full implementation of the design proposed to the project, there has to be careful evaluation of the outcomes, or more specifically improvements introduced by such an implementation. At this point the distributed version with built-in clustering is fully developed, and the focus is on the possible criteria of the resulting product evaluation.
 
 \section{Current Solutions}
 
-Cover the work done by 
+There are already quite a few projects within the area of distributed neural network simulation. Here are some that are most similar in structure with the current project (most of them were mentioned in the Background section).
+
+\subsection{Blue Brain Project}
+
+The Blue Brain Project initiated in collaboration by IBM and EPFL, is aimed to reconstruct the virtual brain on the BlueGene/L supercomputer.\cite{BlueBrain} This project set its objectives in simulating the real virtual brain, as it has already succeded the simulation of a rat cortex. With the sheer numbers of neurons present in simulation closing to $10^9$, this is the project with the most resource power among listed here.
+
+\subsection{SpikeNET}
+
+The SpikeNET simulator focuses on the scalability of the simulation - it is concentrated on simulation of large number of integrate-and-fire neurons which spikes are computed in parallel\cite{ArnaudDelorme1999}. For most parts of its implementation SpikeNET is quite similar to the NeMo project. However, its parallel computation implementation does not exploit a fully distributed parallelism, i.e. most of computation still lies within the scope of one process.
+
+\subsection{OpenSim}
+
+The OpenSim project on the other hand, relies on distribution of neural simulation into a set of parallelizable sub-tasks across a cluster of machines\cite{OpenSim}. However, due to the age of its most recent implementation, the techniques used within it might already be outdated, as more efficient communication channels were developed. Nevertheless, OpenSim, due to the fact that it relies on a fully distributed system, has many similarities in structure with this project. \\ \\
+
+
+Even though, all of these projects could be compared against the MPI NeMo, the differences between the implementations alone will not be sufficient to make a fully informed judgement. The problem is the lack of common ground - all of these implementations vary in the ways of neuron representation, SpikeNET lacks delay functionality and Blue Brain is built on the platform which resource base cannot be challenged by the resources of NeMo project.
+
+Therefore, a much more sensible approach would be to compare the current version of distributed system against the "clean" NeMo version and see which particular points of simulation are different between those two.
+
+\clearpage
 
 \section{Criteria of Comparison}
 
-\subsection{MPI Distribution and Communication Overhead}
+As the test platforms are chosen, it is time to pick a set of criterias which will tested to produce informative results. In order to pick the most informative criteria, there has to be an insight into the main variables within simulation. Those are:
 
-Graphs and information about the configuration and spike delivery steps, time to complete them
+\begin{itemize}
+\item{\textbf{Setup Time}}
 
-\subsubsection{Setup time}
+This criteria comprises the temporal requirements for the simulation to be set up in order to be run. Within core NeMo functionality, this time would be comprised of the simulation setup time which is almost negligible, since the Network object constructed, operates within Simulation. For the distributed system, however, startup time is split differently: it includes the clustering time and initialisation parameters distribution window - which could be further split into 4 steps - mapper, configuration, neurons and synapses.
 
-Complete view upon configuration ditribution and receival
+\item{\textbf{Simulation Time}}
 
-Split of setup time - more on the synapse distribution.
-If a big network - clustering as well.
+The simulation time is a measure of the simulator performance according to the time spent on the actual simulation; the variables that are set for the simulations are:
 
-\subsubsection{Simulation time}
+\begin{enumerate}	
+	\item{Number of neurons} within the network
+	\item{Number of synapses per neuron}
+	\item{Number of simulation steps} - constraint put on the number of simulation steps to derive time requirement per step.
+\end{enumerate}
 
-Complete view upon the spike delivery system
+Therefore, by iterating through each of these variables, while keeping others constant, it is possible to get the dependency of the current implementation on the particular parameter, and how its value affects the overall simulation.
 
-\subsection{Possible set of criterias}
+\item{\textbf{Network throughput}}
 
-Possible set of criterias of comparison of the distributed version as opposed to the main one
+Last criteria that could also represent the network - total spiking within network during simulation. This value highly depends on the number of neurons and the overall interconnectivity - the current implementation would only show the number of fired neurons and external spike deliveries.
 
-\section{Results Collection}
+\end{itemize}
 
-Brief introduction into the results collection
+Having set out all of the meaningful criteria, it is time to look at them in detail and compare the data gathered with different systems.
+
+\section{Setup Time}
+
+This section will cover the simulation setup stage of the distributed system's initialisation.
+
+\subsubsection{MPI clustering and distribution overhead}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale = 0.5]{images/setup_comparison.png}
+\end{center}
+\caption{Comparison of setup time to the number of neurons, synapses and processes}
+\end{figure}
+
+From the above graph it is easily observable that the most amplifying factor for simulation setup time is the number of neurons. The setup time, however, can be further split into the 5 times - clustering, mapper, configuration, neuronal and synaptic distributions.
+
+The ones having the most effect on the simulation setup time are clustering and synaptic distribution. Now, if those are observed closer under particular circumstances, their dependance upon other variables is clearly seen:
+
+\begin{figure}[ht]
+\begin{minipage}[b]{0.5\linewidth}
+\centering
+\includegraphics[width=\textwidth]{images/syndistr.png}
+\caption{Synaptic distribution}
+\label{fig:figure1}
+\end{minipage}
+\hspace{0.5cm}
+\begin{minipage}[b]{0.5\linewidth}
+\centering
+\includegraphics[width=\textwidth]{images/cluster.png}
+\caption{Clustering}
+\label{fig:figure2}
+\end{minipage}
+\end{figure}
+
+From these graphs, it can be concluded that synaptic distribution depends more on the number of neurons and workers rather than on the per-neuron synapse count. As for the clustering, its timeline correlates with the increase in the number of processes - which is logically correct, since this means more calls to the clustering function at the startup.
+
+\section{Simulation Time}
+
+This section attempts to collect and evaluate the results of multiple distributed simulations against the original NeMo simulation, and show the particular differences through performance.
 
 \subsection{Number of neurons}
 
@@ -39,10 +101,10 @@ Graphs and explain how the evaluated trends on the graphs show efficiency of the
 
 Same - but now with varying neurons (need mapping implemented)s
 
-\subsection{Running time of the simulation}
+\subsection{Number of steps}
 
 Runtime of the simulation in focus, no of steps constant
 
-\subsection{Network throughput during simulation}
+\section{Network throughput during simulation}
 
 Firing and spike delivery through the network - how does it compare.
