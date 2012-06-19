@@ -12,7 +12,7 @@ using namespace std;
 namespace nemo {
 	namespace mpi_dist {
 
-WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workerCount) : mapper(workerCount-1), rank(rank), reply(1), workers(workerCount), fired(0), spikes(0), spikesPerStep(0), firedPerStep(0)
+WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workerCount) : mapper(workerCount-1), rank(rank), reply(0), workers(workerCount), fired(0), spikes(0), spikesPerStep(0), firedPerStep(0)
 {
 	sent = 0, received = 0;
 	nemo::Network* net = new nemo::Network();
@@ -21,7 +21,6 @@ WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workerCount) : mapper
 	receiveConfiguration(conf);
 	receiveNeurons(net);
 	receiveSynapses(net);
-	reply = 1;
 	MPI::COMM_WORLD.Send(&reply, 1, MPI::INT, MASTER, DISTRIBUTION_COMPLETE);
 	nemo::Simulation* sim = nemo::simulation(*net, conf);
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -30,11 +29,9 @@ WorkerSimulation::WorkerSimulation(unsigned rank, unsigned workerCount) : mapper
 
 WorkerSimulation::~WorkerSimulation()
 {
-	reply = 0;
+	reply = 1;
 	MPI::COMM_WORLD.Send(&reply, 1, MPI::INT, MASTER, DISTRIBUTION_COMPLETE);
 }
-
-
 
 void
 WorkerSimulation::runSimulation(nemo::Simulation* sim)
@@ -146,7 +143,7 @@ void
 WorkerSimulation::receiveConfiguration(nemo::Configuration& configuration)
 {
 	unsigned confLength;
-	MPI::COMM_WORLD.Recv(&confLength, 1, MPI::INT, MASTER, CONFIGURATION_LENGTH_TAG, status);	
+	MPI::COMM_WORLD.Recv(&confLength, 1, MPI::INT, MASTER, CONFIGURATION_LENGTH_TAG, status);
 	char confdata [confLength];
 	MPI::COMM_WORLD.Recv(&confdata, confLength, MPI::CHAR, MASTER, CONFIGURATION_DATA_TAG, status);
 	decodeConfiguration(configuration, confdata);
@@ -155,13 +152,10 @@ WorkerSimulation::receiveConfiguration(nemo::Configuration& configuration)
 void
 WorkerSimulation::receiveNeurons(nemo::Network* net)
 {
-	unsigned neuronLength;
 	MPI::COMM_WORLD.Recv(&neuronCount, 1, MPI::INT, MASTER, NEURON_COUNT_TAG, status);
+	float params [NEURON_ARGS];
 	for (unsigned nidx = 0; nidx < neuronCount; ++nidx) {
-		MPI::COMM_WORLD.Recv(&neuronLength, 1, MPI::INT, MASTER, NEURON_LENGTH_TAG, status);
-		char neuronData [neuronLength];
-		MPI::COMM_WORLD.Recv(&neuronData, neuronLength, MPI::CHAR, MASTER, NEURON_DATA_TAG, status);
-		float* params = decodeNeuron(neuronData);
+		MPI::COMM_WORLD.Recv(&params,NEURON_ARGS,MPI::FLOAT,MASTER,NEURON_DATA_TAG, status);
 		net->addNeuron(mapper.mapLocal((unsigned)params[7]), params[0], params[1], params[2], params[3], params[4], params[5], params[6]);
 	}
 	for (unsigned nidx = 0; nidx < neuronCount; ++nidx) {
@@ -176,29 +170,28 @@ WorkerSimulation::receiveSynapses(nemo::Network* net)
 	for (unsigned i = 0; i < neuronCount;++i) {
 		outgoingSynapses.push_back(vector <unsigned>());
 	}
-	unsigned ok,synLength;
+	float params[SYNAPSE_ARGS];
 	while(true) {
-		MPI::COMM_WORLD.Recv(&ok,1,MPI::INT,MASTER,SYNAPSE_END_TAG,status);
-		if (ok == 1) break;
-		MPI::COMM_WORLD.Recv(&synLength, 1, MPI::INT, MASTER, SYNAPSE_LENGTH_TAG, status);
-		char synData [synLength];
-		MPI::COMM_WORLD.Recv(&synData, synLength, MPI::CHAR, MASTER, SYNAPSE_DATA_TAG, status);
-		assignSynapse(net, decode(synData, ","));
+		MPI::COMM_WORLD.Recv(&params, SYNAPSE_ARGS, MPI::FLOAT, MASTER, SYNAPSE_DATA_TAG,status);
+		if (params[0] < 0) break;
+		assignSynapse(net, params);
 	}
 }
 
 void
-WorkerSimulation::assignSynapse(nemo::Network* net, vector<string> synParams) {
-	float* result = new float [synParams.size()];
-	for (unsigned i = 0; i < synParams.size()-1; ++i) result[i] = ::atof(synParams[i].c_str());
-	if ((int) result[1] >= 0) {	
-		if ((int) result[0] >= 0) 
-			net->addSynapse(mapper.mapLocal((unsigned) result[0]), mapper.mapLocal((unsigned) result[1]), (unsigned) result[2], result[3], (unsigned char)atoi(synParams[4].c_str()));
+WorkerSimulation::assignSynapse(nemo::Network* net, float* params) {
+	unsigned source = (unsigned) params[0];
+	unsigned target = (unsigned) params[1];
+	unsigned sourceRank = mapper.rankOf(source);
+	unsigned targetRank = mapper.rankOf(target);
+	if (targetRank == rank) {	
+		if (sourceRank == rank) 
+			net->addSynapse(mapper.mapLocal(source), mapper.mapLocal(target), (unsigned) params[2], params[3], (unsigned char) params[4]);
 		else {
-			addIncomingSynapse((int)-(result[0]+1) , mapper.mapLocal((unsigned) result[1]), (unsigned) result[2], result[3]);
+			addIncomingSynapse(source , mapper.mapLocal(target), (unsigned) params[2], params[3]);
 		}
 	} else {
-		addOutgoingSynapse(mapper.mapLocal((unsigned) result[0]), (int)-(result[1]+1));
+		addOutgoingSynapse(mapper.mapLocal(source), target);
 	}
 }
 
