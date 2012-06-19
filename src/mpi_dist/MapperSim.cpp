@@ -29,7 +29,6 @@ MapperSim::MapperSim(const nemo::Network& net, unsigned workerCount) :
 	for (unsigned i = 0; i < neurons; ++i) partition[i] = i;
 	allocateNeurons(net, partition, workers, 0, 0);
 	auxMap.clear();
-//	allocateNeuronsUniform(net);
 }
 
 void
@@ -115,7 +114,6 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 {
 	if (clusters == 1) {
 		neuronMap[starting_cluster].resize(partition.size());
-		cout << starting_cluster << " " << partition.size() << endl;
 		for (unsigned i = 0; i < partition.size(); ++i) {
 			neuronMap[starting_cluster][i] = partition[i];
 			backMap[partition[i]] = i;
@@ -139,6 +137,7 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 		eigenvector[i] = 1;
 		for (j = 0; j < ncount; ++j) matrix[i][j] = 0;
 	}
+	
 	nemo::network::NetworkImpl net = *network.m_impl;
 	for(i = 0; i < ncount; ++i) {
 		vector<synapse_id> synapses = net.getSynapsesFrom(partition[i]);
@@ -154,7 +153,7 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 			}
 		}
 	}
-
+	
 	for (i = 0; i < ncount; ++i) {
 		for (j = 0; j < ncount; ++j) {
 			if (i != j) q_matrix[i][j] = (matrix[i][j] - (float)(degrees[i]*degrees[j])/(2*edges));
@@ -172,29 +171,7 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 		for (i = 0; i < ncount; ++i) eigenvector[i] = tmp[i]/norm;
 		step++;
 	}
-	int sum_divided = 0;
-	for (i = 0; i < ncount; ++i) {
-		if (eigenvector[i] >= 0) {
-			for (j = 0; j < ncount; ++j) {
-				if (eigenvector[j] < 0) sum_divided += matrix[i][j];
-			}
-		}
-	}
-	if (partcount == 0) {
-		int sum_uniform = 0;
-		unsigned dif = ncount/clusters;
-		for (unsigned k = 0; k < clusters; ++k) {
-			for (i = k*dif; i < (k+1)*dif; ++i) {
-				for (j = 0; j < ncount; ++j) {
-					if (j >= (k+1)*dif) {
-						sum_uniform += matrix[i][j];
-					}
-				}
-			}
-		}
-		cout << "Division " << sum_uniform << endl;
-	}
-	cout << sum_divided << endl;
+	
 	delete [] degrees;
 	delete [] tmp;
 	for (i = 0; i < ncount; ++i) {

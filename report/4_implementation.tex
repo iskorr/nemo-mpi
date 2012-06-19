@@ -97,7 +97,7 @@ The $delay\_queue$ is created to store the spikes depending on their delay value
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale = 0.5]{images/enqueuing_scheme.png}
+\includegraphics[scale = 0.5]{images/spike_enqueuing_scheme.png}
 \end{center}
 \caption{Representation of spike enqueuing}
 \end{figure}
@@ -116,29 +116,31 @@ The simulation step returns a vector $fired$ of local neuron IDs, indicating the
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale = 0.5]{images/placeholder.png}
+\includegraphics[scale = 0.5]{images/spike_distribution_scheme.png}
 \end{center}
 \caption{Representation of spike distribution}
 \end{figure}
 
 This function can also be split into two steps:
 
-First step: the vector of fired neurons is iterated through, IDs are looked up in the $outgoingSynapses$ structure. As each ID has a vector of corresponding target nodes, this vector is iterated through, and a non-blocking MPI message with the global ID of a neuron is sent to the target. After the distribution is finalised, an ending message is sent to all workers.
+First step: the vector of fired neurons (1) is iterated through, IDs are looked up in the $outgoingSynapses$ structure. As each ID has a vector of corresponding target nodes (2), this vector is iterated through (3), and a non-blocking MPI message with the global ID of a neuron is sent to the target. After the distribution is finalised, an ending message is sent to all workers.
 
-Second step: after all non-blocking messages have been sent, function initiates a loop that enqueues all incoming IDs into the $incoming\_queue$. This loop only terminates after receiving the ending messages from all other workers.
+Second step: after all non-blocking messages have been sent, function initiates a loop that enqueues (4) all incoming IDs into the $incoming\_queue$. This loop only terminates after receiving the ending messages from all other workers.
 
 After finishing these two steps, the function returns, leading to the end of the distributed simulation step on this worker.
 
 \section{Clustering}
 
-Clustering implementation is dependent on the algorithm introduced by Mark Newman\cite{Newman2006}. This section will provide the mathematical overview of this algorithm and its implementation within Mapper class.
+Clustering implementation is dependent on the algorithm introduced by Mark Newman in 2006. This section will provide the mathematical overview of this algorithm and its implementation within Mapper class.
 
 \subsection{Newman's Algorithm}
 
-Most of Newman's work concentrates on finding communities in the network structures. on the modularity as the main measure for network clustering.
+Major part of Newman's research concentrates on finding communities in the network structures\cite{NewmanComm}. \emph{Community structure} is a feature of a graph that shows the gathering of vertices into groups with high connectivity. This feature is best described by modularity, the measure of modular division of a particular network into subnets with high edge density.
 
+Formula for modularity is:
+\begin{equation}\end{equation}
 
-Newman's algorithm:
+Newman's algorithm ("Method of Optimal Modularity"\cite{Newman2006}) is a way of determining the natural division of graph's vertices into several non-overlapping communities, based on the modularity measure. 
 
 \begin{enumerate}
 \item{Create an adjancency matrix of the network}

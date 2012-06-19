@@ -11,9 +11,11 @@ using namespace std;
 namespace nemo {
 	namespace mpi_dist {
 
-SimulationMPI::SimulationMPI(const nemo::Network *net, const nemo::Configuration& conf, int argc, char* argv [], unsigned duration, bool timed, const string& filename)
+SimulationMPI::SimulationMPI(const nemo::Network *net, const nemo::Configuration& conf, int argc, char* argv [], unsigned duration, bool timed, const string& filename) : neurons(100), synapses(50)
 {
 	MPI::Init(argc, argv);
+	if (argc > 1) neurons = atoi(argv[1]);
+	if (argc > 2) synapses = atoi(argv[2]);
 	unsigned rank = MPI::COMM_WORLD.Get_rank();
 	unsigned workers = MPI::COMM_WORLD.Get_size();
 	if (rank == MASTER) {
@@ -47,7 +49,7 @@ SimulationMPI::simulateTimed(nemo::mpi_dist::MasterSimulation& master, unsigned 
 	}
 	unsigned long runtime = timer.elapsedWallclock();
 	unsigned totalspiking = master.endSimulation();
-	out << master.getNeuronCount() << " " << runtime << " " << timer.elapsedSimulation() << " " << totalfiring << " " << totalspiking << "\n";
+	out << neurons << " " << synapses << " " << runtime << " " << timer.elapsedSimulation() << " " << totalfiring << " " << totalspiking << "\n";
 }
 
 void
@@ -62,7 +64,7 @@ SimulationMPI::simulateStepped(nemo::mpi_dist::MasterSimulation& master, unsigne
 	}
 	unsigned long runtime = timer.elapsedWallclock();
 	unsigned totalspiking = master.endSimulation();
-	out << master.getNeuronCount() << " " << runtime << " " << timer.elapsedSimulation() << " " << totalfiring << " " << totalspiking << "\n";
+	out << neurons << " " << synapses << " " << runtime << " " << timer.elapsedSimulation() << " " << totalfiring << " " << totalspiking << "\n";
 }
 
 	}
