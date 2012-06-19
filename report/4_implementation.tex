@@ -251,17 +251,25 @@ This part of code is responsible for the eigen vector generation. Eigenvector is
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale = 0.5]{images/clustering_recursive.png}
+\includegraphics[scale = 0.4]{images/clustering_recursive.png}
 \end{center}
 \caption{Representation of a recursive call to the clustering function for 5 clusters}
 \end{figure}
 
 \section{Alternative Solutions}
 
+There were a few alternative ways that the above algorithms could be implemented - however, most of them quickly proved to be insufficient for the purpose or too time-consuming to implement.
+
 \begin{itemize}
 \item{\textbf{Use of Boost MPI libraries}}
 
-The idea of this proposal was that boost MPI libraries comprise all needed functionality in an easy and well-represented way. However, use of both Boost and CMake caused numerous build fails, which in the end, outweighed the positive side. Moreover, most of the system that was implemented already at that point was written with MPICH - therefore, a change of implementation library would consume more time.
+The idea of this solution was that boost MPI libraries comprise all needed functionality in an easy and well-represented way. However, use of both Boost and CMake caused numerous build fails, which in the end, outweighed the positive side. Moreover, most of the system that was implemented already at that point was written with MPICH - therefore, a change of implementation library would consume more time.
 
-\item{}
+\item{\textbf{Implementation of spike receiving into enqueuing step}}
+
+This proposal was aimed at having a wider window of simulation - by creating unblocking receives at the start, that would be filled in with the non-blocking send. However, such an implementation is leading to race conditions occuring, and, moreover, needs the starting input sent from all nodes, which could cause a significant overhead. Furthermore, a single communication window implemented in $distributeOutgoingSpikes()$ method is much easier to control and debug, whenever an MPI call fails.
+
+\item{\textbf{Expand the limits of mapping by using both uniform and Newman clustering algorithms}}
+
+As mentioned before, the current implementation of clustering algorithm is not fully applicable to large scale networks, mostly due to the RAM limitations. However, uniform mapping does not require that much memory, therefore, if it is done first, leaving less computationally heavy chunks for advanced clustering, it should produce faster results. The outcome however, is quite the opposite - the initial uniform distribution adds the most external synapses to the partitions - as a result, rendering most of the further clustering not as useful, especially considering setup time spent on it.
 \end{itemize}

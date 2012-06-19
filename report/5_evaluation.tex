@@ -1,16 +1,58 @@
 \chapter{Evaluation}
 
-This chapter will cover the project from the point of the impact made, how well it fits within the current trends
+After full implementation of the design proposed to the project, there has to be careful evaluation of the outcomes, or more specifically improvements introduced by such an implementation. At this point the distributed version with built-in clustering is fully developed, and the focus is on the possible criteria of the resulting product evaluation.
 
 \section{Current Solutions}
 
-Cover the work done by 
+There are already quite a few projects within the area of distributed neural network simulation. Here are some that are most similar in structure with the current project (most of them were mentioned in the Background section).
+
+\subsection{Blue Brain Project}
+
+The Blue Brain Project initiated in collaboration by IBM and EPFL, is aimed to reconstruct the virtual brain on the BlueGene/L supercomputer.\cite{BlueBrain}
+
+\subsection{SpikeNET}
+
+The SpikeNET simulator focuses on the scalability of the simulation - it is concentrated on simulation of large number of integrate-and-fire neurons which spikes are computed in parallel\cite{ArnaudDelorme1999}. For most parts of its implementation SpikeNET is quite similar to the NeMo project. However, its parallel computation implementation does not exploit a fully distributed parallelism, i.e. most of computation still lies within the scope of one process.
+
+\subsection{OpenSim}
+
+The OpenSim project on the other hand, relies on distribution of neural simulation into a set of parallelizable sub-tasks across a cluster of machines\cite{OpenSim}. However, due to the age of its most recent implementation, the techniques used within it might already be outdated, as more efficient communication channels were developed. Nevertheless, OpenSim, due to the fact that it relies on a fully distributed system, has many similarities in structure with this project. \\ \\
+
+
+Even though, all of these projects could be compared against the MPI NeMo, the differences between the implementations alone will not be sufficient to make a fully informed judgement. The problem is the lack of common ground - all of these implementations vary in the ways of neuron representation, SpikeNET lacks delay functionality and Blue Brain is built on the platform which resource base cannot be challenged by the resources of NeMo project.
+
+Therefore, a much more sensible approach would be to compare the current version of distributed system against the "clean" NeMo version and see which particular points of simulation are different between those two.
 
 \section{Criteria of Comparison}
 
+As the test platforms are chosen, it is time to pick a set of criterias which will tested to produce informative results. In order to pick the most informative criteria, there has to be an insight into the main variables within simulation. Those are:
+
+\begin{itemize}
+\item{\textbf{Setup Time}}
+
+This criteria comprises the temporal requirements for the simulation to be set up in order to be run. Within core NeMo functionality, this time would be comprised of time to construct the network and the simulation setup time. For the distributed system, this time is split differently: it includes the clustering time and initialisation parameters distribution window - which could be further split into 4 steps - mapper, configuration, neurons and synapses.
+
+\item{\textbf{Simulation Time}}
+
+The simulation time is a measure of the simulator performance according to the time spent on the actual simulation; the variables that are set for the simulations are:
+
+\begin{enumerate}	
+	\item{Number of neurons} within the network
+	\item{Number of synapses per neuron}
+	\item{Number of simulation steps} - constraint put on the number of simulation steps to derive time requirement per step.
+\end{enumerate}
+
+Therefore, by iterating through each of these variables, while keeping others constant, it is possible to get the dependency of the current implementation on the particular parameter, and how its value affects the overall simulation.
+
+\item{\textbf{Network throughput}}
+
+Last criteria that could also represent the network - total spiking within network during simulation. This value highly depends on the number of neurons and the overall interconnectivity - the current implementation would only show the number of fired neurons and external spike deliveries.
+
+\end{itemize}
+
 \subsection{MPI Distribution and Communication Overhead}
 
-Graphs and information about the configuration and spike delivery steps, time to complete them
+
 
 \subsubsection{Setup time}
 
@@ -22,10 +64,6 @@ If a big network - clustering as well.
 \subsubsection{Simulation time}
 
 Complete view upon the spike delivery system
-
-\subsection{Possible set of criterias}
-
-Possible set of criterias of comparison of the distributed version as opposed to the main one
 
 \section{Results Collection}
 
@@ -39,7 +77,7 @@ Graphs and explain how the evaluated trends on the graphs show efficiency of the
 
 Same - but now with varying neurons (need mapping implemented)s
 
-\subsection{Running time of the simulation}
+\subsection{Number of steps}
 
 Runtime of the simulation in focus, no of steps constant
 
