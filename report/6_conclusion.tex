@@ -1,6 +1,6 @@
 \chapter{Conclusion}
 
-The work that was produced within the scope of this project clearly shows that distributed implementation can yield a much better performance time, when applied to large-scale networks.
+In conclusion, the work produced within the scope of this project showed several ways of implementing a distributed system, provided an informative insight into the area of parallel computations and gave an overall picture of the internal neural network structure. It also proved that 
 
 \section{Outcome of the project}
 
@@ -16,15 +16,17 @@ Possible extensions of the project
 
 \subsection{Short-term extensions}
 
+
+
 \subsubsection{Optimisation}
 
-Even though, one of the potential aims of this project is to provide better performance in simulations, most of the benchmarks proved distributed version to be slower than the single machine one. The main reasons behind this are: simulation setup overhead and communication overhead - and in the latter case, the main reason is ineffective access of the data fields.
+Even though, one of the potential aims of this project is to provide better performance in simulations, most of the benchmarks proved distributed version to be slower than the single machine one. The main reasons behind this are: simulation setup and communication overheads. In order to overcome those, a more efficient communication channel has to be established - the current  
 
 \subsubsection{Implement full NeMo functionality}
 
 The distributed version provides most of the functionality needed, however, not every single function was implemented. The main focus is on the STDP application and backend setup per machine.
 
-STDP application is failed due to inability to return full STDP function via encoding. This is resolved through extra message passing.
+STDP application is failed due to inability to return full STDP function via encoding. This particular problem could be resolved through use of a better data structure for its transmission.
 
 Backend setup needs to be implemented via NeMo functionality - whenever the machine, the process runs on has CUDA capabilities, the worker should have an indication sent to the Master node.
 
