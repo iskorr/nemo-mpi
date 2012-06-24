@@ -12,18 +12,35 @@ using namespace std;
 namespace nemo {
 	namespace mpi_dist {
 
-MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configuration& conf) : workers(MPI::COMM_WORLD.Get_size()), verbose(true)
+MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configuration& conf) : workers(MPI::COMM_WORLD.Get_size()), verbose(false)
 {
 	if(verbose) cout << "Master initialised" << endl;
 	unsigned ok, worker = 1;
+	nemo::Timer timer;
+	unsigned long totaltime = 0;
+	timer.reset();
 	if(verbose) cout << "Clustering...";
 	MapperSim mapper(net, workers-1);
 	if(verbose) cout << "................complete" << endl;
-	
+	cout << timer.elapsedWallclock() << " ";
+	totaltime += timer.elapsedWallclock();
+	timer.reset();
 	distributeMapper(mapper);
+	cout << timer.elapsedWallclock() << " ";
+	totaltime += timer.elapsedWallclock();
+	timer.reset();
 	distributeConfiguration(conf);
+	cout << timer.elapsedWallclock() << " ";
+	totaltime += timer.elapsedWallclock();
+	timer.reset();
 	distributeNeurons(net, mapper);
+	cout << timer.elapsedWallclock() << " ";
+	totaltime += timer.elapsedWallclock();
+	timer.reset();
 	distributeSynapses(*net.m_impl, mapper);
+	cout << timer.elapsedWallclock() << " ";
+	totaltime += timer.elapsedWallclock();
+	cout <<  totaltime  << endl;
 
 	for (; worker < workers; ++worker) {
 		MPI::COMM_WORLD.Recv(&ok, 1, MPI::INT, worker, DISTRIBUTION_COMPLETE, status);
