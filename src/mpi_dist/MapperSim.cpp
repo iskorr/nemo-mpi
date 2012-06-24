@@ -1,6 +1,7 @@
 #include "MapperSim.hpp"
 #include "parsing.hpp"
 #include <vector>
+#include <iostream>
 #include <nemo/util.h>
 #include <nemo/exception.hpp>
 #include <math.h>
@@ -120,6 +121,7 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 {
 	if (clusters == 1) {
 		neuronMap[starting_cluster].resize(partition.size());
+		cout << starting_cluster << " " << partition.size() << endl;
 		for (unsigned i = 0; i < partition.size(); ++i) {
 			neuronMap[starting_cluster][i] = partition[i];
 			backMap[partition[i]] = i;
@@ -127,6 +129,7 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 		return;
 	}
 	unsigned ncount = partition.size();
+	unsigned** matrix = new unsigned*[ncount];
 	float** q_matrix = new float*[ncount];
 	unsigned* degrees = new unsigned [ncount];
 	float* eigenvector = new float [ncount];
@@ -137,6 +140,7 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 		auxMap[partition[i]] = partcount;
 		backMap[partition[i]] = i;
 		q_matrix [i] = new float[ncount];
+		matrix[i] = new unsigned[ncount];
 		degrees[i] = 0;
 		eigenvector[i] = 1;
 		for (j = 0; j < ncount; ++j) q_matrix[i][j] = 0;
@@ -148,8 +152,8 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 			unsigned globtarget = net.getSynapseTarget(synapses[j]);
 			if (auxMap[globtarget] == partcount) {
 				unsigned target = backMap[globtarget];
-				q_matrix[i][target]++;
-				q_matrix[target][i]++;
+				matrix[i][target]++;
+				matrix[target][i]++;
 				degrees[i]++;
 				degrees[target]++;
 				edges++;
@@ -158,7 +162,7 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 	}
 	for (i = 0; i < ncount; ++i) {
 		for (j = 0; j < ncount; ++j) {
-			if (i != j) q_matrix[i][j] = (q_matrix[i][j] - (float)(degrees[i]*degrees[j])/(2*edges));
+			if (i != j) q_matrix[i][j] = (matrix[i][j] - (float)(degrees[i]*degrees[j])/(2*edges));
 			else q_matrix[i][j] = STRENGTH;
 		}
 	}
@@ -173,6 +177,20 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 		for (i = 0; i < ncount; ++i) eigenvector[i] = tmp[i]/norm;
 		step++;
 	}
+	int sum_divided=0, sum_uniform= 0;
+	for (i = 0; i < ncount; ++i) {
+		if (eigenvector[i] >= 0) {
+		 for (j = 0; j < ncount; ++j) {
+			if(eigenvector[j] < 0) sum_divided += matrix[i][j];
+		 }
+		}
+	}
+	for (i = 0; i < ncount/2; ++i) {
+		for (j = ncount/2; j < ncount; ++j) {
+			sum_uniform += matrix[i][j];
+		}
+	}
+	cout << sum_uniform - sum_divided << endl;
 	delete [] degrees;
 	delete [] tmp;
 	for (i = 0; i < ncount; ++i) {

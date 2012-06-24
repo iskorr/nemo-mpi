@@ -1,22 +1,24 @@
 \chapter{Conclusion}
 
-In conclusion, the work produced within the scope of this project showed several ways of implementing a distributed system, provided an informative insight into the area of parallel computations and gave an overall picture of the internal neural network structure. It also proved that 
+In conclusion of this project it could be said that its main goal was achieved, however, there is still a lot of improvements to be made. 
 
 \section{Outcome of the project}
 
-Is the distributed version successful in reaching targets set by the project?
+The main set of goals was achieved within the scope of project. That is a fully distributed version of NeMo with integrated clustering is operational, and the whole set of the new classes is wrapped around the main NeMo functionality without altering simulator's internal structure.
+
+However, even though the design objectives set out at the start of the project were met, the higher goal of having a distributed version with optimum performance is yet to be achieved. The reason behind this is that the time allowance provided for this project was not enough for full optimisation. On the other hand, through work on this project, the overall structure of distributed systems was demonstrated, it gave an insight into parallel computations and a good sense of clustering and graph theory applications.
+
+Through the research into related projects more knowledge about similar parallel systems was gained, and overall expertise in the field of neural computation received. As more knowledge was gained the project showed more capabilities for further extension.
 
 \section{Possible impact}
 
-How this project might impact further developments within the field?
+This project has shown that most of the present systems if implemented correctly could be translated into distributed version. As well as that, it provides a good insight into the structure of the neural networks simulations and into graph theory. This could possibly lead to greater interest in the parallelisation of similar systems and provide an insight into clustering for the projects relying on the connectivity of the networks.
 
 \section{Further work}
 
-Possible extensions of the project
-
 \subsection{Short-term extensions}
 
-
+This section will outline some of the immediate improvements that could be implemented within a small time frame.
 
 \subsubsection{Optimisation}
 
@@ -26,10 +28,18 @@ Even though, one of the potential aims of this project is to provide better perf
 
 The distributed version provides most of the functionality needed, however, not every single function was implemented. The main focus is on the STDP application and backend setup per machine.
 
-STDP application is failed due to inability to return full STDP function via encoding. This particular problem could be resolved through use of a better data structure for its transmission.
+\textbf{STDP application} was failed due to inability to return full STDP function via encoding. This particular problem could be resolved through use of a better data structure for its transmission.
 
-Backend setup needs to be implemented via NeMo functionality - whenever the machine, the process runs on has CUDA capabilities, the worker should have an indication sent to the Master node.
+\textbf{Backend setup} needs to be implemented via NeMo functionality - whenever the machine, the process runs on has CUDA capabilities, the worker should have an indication sent to the Master node.
 
 \subsection{Long-term extensions}
 
-Possible developments to extend the project into new projects within this field
+Here are some of more farseeing possibilities that could be implemented as a separate project.
+
+\subsubsection{Improve the core functionality of NeMo with the use of distributed model}
+
+As technology progresses, the inter-process communication may reach another level of speed and capacity. Therefore, in foreseeable future it should be possible to give more functionality to the distributed model. For example, the neuron swap could be implemented, so that some neurons could be transferred from one worker to the other during simulation step. Instantaneous computation of several neurons sharing the dendrite could be implemented (and doing this would also greatly increase performance). Thus, one of the aims could be overall improvement of the simulator, via the ditributed version.
+
+\subsubsection{Implementation of new hierarchical structures into the distributed version}
+
+With the new capabilities, it should be possible to define new hierarchical structures, in order to make several layers of simulation. This could prove much more useful if applied to a large network or farm of computers, as this ensures greater level of control and provides more capabilities for distribution and simulation.

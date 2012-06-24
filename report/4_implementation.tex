@@ -143,8 +143,6 @@ where $m$ is total number of edges, $k_{i}$ and $k_{j}$ are the degrees of the c
 
 Newman's algorithm ("Method of Optimal Modularity"\cite{Newman2006}) is a way of determining the natural division of graph's vertices into several non-overlapping communities, based on the modularity measure. Its structure is different to the older algorithm used for finding communities\cite{NewmanAlgo}, as the latter was more scientifically focused, therefore lacked certain capabilities for implementation in the parallel computation design.
 
-\clearpage
-
 The step structure of the algorithm is as follows:
 
 \begin{enumerate}
@@ -255,6 +253,8 @@ This part of code is responsible for the eigen vector generation. Eigenvector is
 \end{center}
 \caption{Representation of a recursive call to the clustering function for 5 clusters}
 \end{figure}
+
+\clearpage
 
 \section{Alternative Solutions}
 

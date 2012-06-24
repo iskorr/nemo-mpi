@@ -12,7 +12,7 @@
  * Author: Andreas K. Fidjeland <andreas.fidjeland@imperial.ac.uk>
  * Date: March 2010
  */ 
-
+#include <mpi_dist/SimulationMPI.hpp>
 #include <cmath>
 #include <vector>
 #include <boost/random.hpp>
@@ -332,19 +332,20 @@ main(int argc, char* argv[])
 		//! \todo otherwise seed from system time
 	
 		LOG(verbose, "Constructing network");
-		boost::scoped_ptr<nemo::Network> net(nemo::torus::construct(pcount, m, stdp != 0, sigma, verbose >= 1));
+		nemo::Network* net(nemo::torus::construct(pcount, m, stdp != 0, sigma, verbose >= 1));
 		LOG(verbose, "Creating configuration");
 		nemo::Configuration conf = configuration(vm);
 		LOG(verbose, "Simulation will run on %s", conf.backendDescription());
 		LOG(verbose, "Creating simulation\n");
-		boost::scoped_ptr<nemo::Simulation> sim(nemo::simulation(*net, conf));
+		//boost::scoped_ptr<nemo::Simulation> sim(nemo::simulation(*net, conf));
+		nemo::mpi_dist::SimulationMPI(net, conf,argc,argv, 100, false, "");
 		LOG(verbose, "Running simulation");
 
-		if(runBenchmark) {
+/*		if(runBenchmark) {
 			benchmark(sim.get(), pcount*PATCH_SIZE, m, vm);
 		} else {
 			simulate(sim.get(), duration, stdp, out);
-		}
+		}*/
 		LOG(verbose, "Simulation complete");
 		return 0;
 	} catch(std::exception& e) {
