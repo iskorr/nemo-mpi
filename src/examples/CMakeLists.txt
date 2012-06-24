@@ -11,7 +11,7 @@ LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 LINK_STATIC_MSVCR()
 
 ADD_EXECUTABLE(torus torus.cpp common.cpp)
-TARGET_LINK_LIBRARIES(torus nemo ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(torus nemo nemo_mpi_dist ${Boost_LIBRARIES})
 
 ADD_EXECUTABLE(random random.cpp common.cpp)
 TARGET_LINK_LIBRARIES(random nemo ${Boost_LIBRARIES})
