@@ -1,0 +1,1 @@
+plot "rand.txt" using 3:2 with lines, "mpi1.txt" using 3:2 with lines, "mpi2.txt" using 3:2 with lines, "mpi3.txt" using 3:2 with lines, "mpi4.txt" using 3:2 with lines, "mpi5.txt" using 3:2 with lines
