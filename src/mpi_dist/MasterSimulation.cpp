@@ -16,9 +16,9 @@ MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configu
 {
 	if(verbose) cout << "Master initialised" << endl;
 	unsigned ok, worker = 1;
-	if(verbose) cout << "Clustering...";
+	if(verbose) cout << "Clustering initiated..." << endl;
 	MapperSim mapper(net, workers-1);
-	if(verbose) cout << "................complete" << endl;
+	if(verbose) cout << "Clustering...................complete" << endl;
 	distributeMapper(mapper);
 	distributeConfiguration(conf);
 	distributeNeurons(net, mapper);

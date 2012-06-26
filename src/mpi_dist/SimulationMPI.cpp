@@ -50,6 +50,10 @@ SimulationMPI::simulateTimed(nemo::mpi_dist::MasterSimulation& master, unsigned 
 	unsigned long runtime = timer.elapsedWallclock();
 	unsigned totalspiking = master.endSimulation();
 	out << neurons << " " << synapses << " " << runtime << " " << timer.elapsedSimulation() << " " << totalfiring << " " << totalspiking << "\n";
+	cout << "Total runtime of the simulation: " << runtime << "\n";
+	cout << "Total # of steps: " << timer.elapsedSimulation() << "\n";
+	cout << "Total # of neurons fired: " << totalfiring << "\n";
+	cout << "Total # of spikes delivered (Over MPI): " << totalspiking << "\n";
 }
 
 void
@@ -65,6 +69,10 @@ SimulationMPI::simulateStepped(nemo::mpi_dist::MasterSimulation& master, unsigne
 	unsigned long runtime = timer.elapsedWallclock();
 	unsigned totalspiking = master.endSimulation();
 	out << neurons << " " << synapses << " " << runtime << " " << timer.elapsedSimulation() << " " << totalfiring << " " << totalspiking << "\n";
+	cout << "Total runtime of the simulation: " << runtime << "\n";
+	cout << "Total # of steps: " << timer.elapsedSimulation() << "\n";
+	cout << "Total # of neurons fired: " << totalfiring << "\n";
+	cout << "Total # of spikes delivered (Over MPI): " << totalspiking << "\n";
 }
 
 	}

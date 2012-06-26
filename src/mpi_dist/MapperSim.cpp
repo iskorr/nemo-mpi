@@ -31,6 +31,7 @@ MapperSim::MapperSim(const nemo::Network& net, unsigned workerCount) :
 	for (unsigned i = 0; i < neurons; ++i) partition[i] = i;
 	if (neurons <= MEM_MAX) {
 		this->auxMap.resize(neurons);
+		cout << "Total number of clusters: " << workers << endl;
 		allocateNeurons(net, partition, workers, 0, 0);
 		auxMap.clear();
 	} else {
@@ -121,6 +122,7 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 {
 	if (clusters == 1) {
 		neuronMap[starting_cluster].resize(partition.size());
+		cout << starting_cluster << " " << partition.size() << endl;
 		for (unsigned i = 0; i < partition.size(); ++i) {
 			neuronMap[starting_cluster][i] = partition[i];
 			backMap[partition[i]] = i;
@@ -130,6 +132,7 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 	unsigned ncount = partition.size();
 	float** q_matrix = new float*[ncount];
 	unsigned* degrees = new unsigned [ncount];
+	unsigned** matrix = new unsigned* [ncount];
 	float* eigenvector = new float [ncount];
 	float* tmp = new float [ncount];
 	unsigned i,j, edges = 0, step = 0;
@@ -138,6 +141,7 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 		auxMap[partition[i]] = partcount;
 		backMap[partition[i]] = i;
 		q_matrix [i] = new float[ncount];
+		matrix [i] = new unsigned[ncount];
 		degrees[i] = 0;
 		eigenvector[i] = 1;
 		for (j = 0; j < ncount; ++j) q_matrix[i][j] = 0;
@@ -149,8 +153,8 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 			unsigned globtarget = net.getSynapseTarget(synapses[j]);
 			if (auxMap[globtarget] == partcount) {
 				unsigned target = backMap[globtarget];
-				q_matrix[i][target]++;
-				q_matrix[target][i]++;
+				matrix[i][target]++;
+				matrix[target][i]++;
 				degrees[i]++;
 				degrees[target]++;
 				edges++;
@@ -159,7 +163,7 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 	}
 	for (i = 0; i < ncount; ++i) {
 		for (j = 0; j < ncount; ++j) {
-			if (i != j) q_matrix[i][j] = (q_matrix[i][j] - (float)(degrees[i]*degrees[j])/(2*edges));
+			if (i != j) q_matrix[i][j] = (matrix[i][j] - (float)(degrees[i]*degrees[j])/(2*edges));
 			else q_matrix[i][j] = STRENGTH;
 		}
 	}
@@ -178,8 +182,10 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 	delete [] tmp;
 	for (i = 0; i < ncount; ++i) {
 		delete [] q_matrix[i];
+		delete [] matrix[i];
 	}
 	delete [] q_matrix;
+	delete [] matrix;
 	vector<unsigned> partition1;
 	vector<unsigned> partition2;
 	for (i = 0; i < ncount; ++i) {
