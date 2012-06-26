@@ -93,7 +93,7 @@ main(int argc, char* argv[])
 	nemo::Configuration conf;
 	conf.setWriteOnlySynapses();
 	conf.enableLogging();
-	conf.setCudaBackend();
+	conf.setCpuBackend();
 	nemo::mpi_dist::SimulationMPI(net, conf, argc, argv, duration, timed, filename);
 	return 0;
 }

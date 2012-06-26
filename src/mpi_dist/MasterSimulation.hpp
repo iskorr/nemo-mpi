@@ -49,7 +49,7 @@ class MasterSimulation {
 		void distributeNeurons(const nemo::Network& net, MapperSim& mapper);
 		void distributeSynapses(const nemo::network::NetworkImpl& net, const MapperSim& mapper);
 		
-		/* Helper function to get the data from the network */
+		/* Helper function to get the data from the network separately from NeMo implementation */
 		float* getNeuronIdx(unsigned idx, const nemo::Network& net);
 
 		/* Helper functions for the data transmission */

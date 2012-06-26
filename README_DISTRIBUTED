@@ -1,0 +1,16 @@
+In order to run the distributed version on the lab machines run:
+
+	make
+
+This will compile the build folder with the mpi_dist_general example within the src/examples folder.
+Once done, you can run the MPI version via mpirun:
+
+	mpirun -np L -machinefile F ./mpi_dist_general [number_of_neurons] [number_of_synapses] [if_timed(1 for timed, 0 for stepped)] [duration] [max_delay] [stdp_on] [output_filename]
+
+where L is a number of processes and F is (optional) machinefile with the machines for the distributed version to run.
+Or alternatively through benchmark:
+
+	1) move contents of benchmark folder into the build/src/examples
+	2) sh PREFERRED_BENCHMARK.sh
+
+which writes output to the corresponding folder.

@@ -12,36 +12,17 @@ using namespace std;
 namespace nemo {
 	namespace mpi_dist {
 
-MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configuration& conf) : workers(MPI::COMM_WORLD.Get_size()), verbose(false)
+MasterSimulation::MasterSimulation(const nemo::Network& net, const nemo::Configuration& conf) : workers(MPI::COMM_WORLD.Get_size()), verbose(true)
 {
 	if(verbose) cout << "Master initialised" << endl;
 	unsigned ok, worker = 1;
-	nemo::Timer timer;
-	unsigned long totaltime = 0;
-	timer.reset();
 	if(verbose) cout << "Clustering...";
 	MapperSim mapper(net, workers-1);
 	if(verbose) cout << "................complete" << endl;
-	cout << timer.elapsedWallclock() << " ";
-	totaltime += timer.elapsedWallclock();
-	timer.reset();
 	distributeMapper(mapper);
-	cout << timer.elapsedWallclock() << " ";
-	totaltime += timer.elapsedWallclock();
-	timer.reset();
 	distributeConfiguration(conf);
-	cout << timer.elapsedWallclock() << " ";
-	totaltime += timer.elapsedWallclock();
-	timer.reset();
 	distributeNeurons(net, mapper);
-	cout << timer.elapsedWallclock() << " ";
-	totaltime += timer.elapsedWallclock();
-	timer.reset();
 	distributeSynapses(*net.m_impl, mapper);
-	cout << timer.elapsedWallclock() << " ";
-	totaltime += timer.elapsedWallclock();
-	cout <<  totaltime  << endl;
-
 	for (; worker < workers; ++worker) {
 		MPI::COMM_WORLD.Recv(&ok, 1, MPI::INT, worker, DISTRIBUTION_COMPLETE, status);
 		if (ok == 1) break;
@@ -183,7 +164,6 @@ MasterSimulation::sendData(const string& data, unsigned length_tag, unsigned dat
 void
 MasterSimulation::sendSynapseData(float* encodedSynapse, unsigned worker)
 {
-	//MPI::COMM_WORLD.Send(&ok, 1, MPI::INT, worker, SYNAPSE_END_TAG);
 	MPI::COMM_WORLD.Send(encodedSynapse, SYNAPSE_ARGS, MPI::FLOAT, worker, SYNAPSE_DATA_TAG);
 }
 
