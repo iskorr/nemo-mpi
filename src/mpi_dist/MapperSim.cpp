@@ -31,7 +31,6 @@ MapperSim::MapperSim(const nemo::Network& net, unsigned workerCount) :
 	for (unsigned i = 0; i < neurons; ++i) partition[i] = i;
 	if (neurons <= MEM_MAX) {
 		this->auxMap.resize(neurons);
-		cout << "Total number of clusters: " << workers << endl;
 		allocateNeurons(net, partition, workers, 0, 0);
 		auxMap.clear();
 	} else {
@@ -117,22 +116,24 @@ MapperSim::allocateNeuronsUniform(const nemo::Network& net)
 	}
 }
 
+// Mapping Algorithm implementation
 void
 MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& partition, unsigned clusters, unsigned starting_cluster, int partcount)
 {
+	// Recursive version - this is the base case
 	if (clusters == 1) {
 		neuronMap[starting_cluster].resize(partition.size());
-		cout << starting_cluster << " " << partition.size() << endl;
 		for (unsigned i = 0; i < partition.size(); ++i) {
 			neuronMap[starting_cluster][i] = partition[i];
 			backMap[partition[i]] = i;
 		}
 		return;
 	}
+
+	// Variables instantiation - q_matrix is the most important (used for both adjacency and modularity)
 	unsigned ncount = partition.size();
 	float** q_matrix = new float*[ncount];
 	unsigned* degrees = new unsigned [ncount];
-	unsigned** matrix = new unsigned* [ncount];
 	float* eigenvector = new float [ncount];
 	float* tmp = new float [ncount];
 	unsigned i,j, edges = 0, step = 0;
@@ -141,32 +142,39 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 		auxMap[partition[i]] = partcount;
 		backMap[partition[i]] = i;
 		q_matrix [i] = new float[ncount];
-		matrix [i] = new unsigned[ncount];
 		degrees[i] = 0;
 		eigenvector[i] = 1;
 		for (j = 0; j < ncount; ++j) q_matrix[i][j] = 0;
 	}
+
+	// One part of original NeMo that has been modified - accessible NetworkImpl within Network class
 	nemo::network::NetworkImpl net = *network.m_impl;
+
+	// Step 1 = Populating Adjacency Matrix
 	for(i = 0; i < ncount; ++i) {
 		vector<synapse_id> synapses = net.getSynapsesFrom(partition[i]);
 		for (j = 0; j < synapses.size(); ++j) {
 			unsigned globtarget = net.getSynapseTarget(synapses[j]);
 			if (auxMap[globtarget] == partcount) {
 				unsigned target = backMap[globtarget];
-				matrix[i][target]++;
-				matrix[target][i]++;
+				q_matrix[i][target]++;
+				q_matrix[target][i]++;
 				degrees[i]++;
 				degrees[target]++;
 				edges++;
 			}
 		}
 	}
+
+	// Step 2 = Population of Modularity Matrix using previously collected values for adjacency and degrees per neuron
 	for (i = 0; i < ncount; ++i) {
 		for (j = 0; j < ncount; ++j) {
-			if (i != j) q_matrix[i][j] = (matrix[i][j] - (float)(degrees[i]*degrees[j])/(2*edges));
+			if (i != j) q_matrix[i][j] = (q_matrix[i][j] - (float)(degrees[i]*degrees[j])/(2*edges));
 			else q_matrix[i][j] = STRENGTH;
 		}
 	}
+
+	// Step 3 = Finding leading eigenvector (Von Moses algorithm, power-iteration)
 	while(step < THRESHOLD) {
 		norm_sq=0;
 		for (i = 0; i < ncount; ++i) {
@@ -178,14 +186,16 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 		for (i = 0; i < ncount; ++i) eigenvector[i] = tmp[i]/norm;
 		step++;
 	}
+
+	// Cleaning up
 	delete [] degrees;
 	delete [] tmp;
 	for (i = 0; i < ncount; ++i) {
 		delete [] q_matrix[i];
-		delete [] matrix[i];
 	}
 	delete [] q_matrix;
-	delete [] matrix;
+
+	// Step 4 = Partitioning the graph
 	vector<unsigned> partition1;
 	vector<unsigned> partition2;
 	for (i = 0; i < ncount; ++i) {
@@ -196,6 +206,8 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 		}	
 	}
 	delete [] eigenvector;
+
+	// The check for empty graphs - if one of partitions is empty - do a uniform split
 	if (partition1.size() == 0 || partition2.size() == 0) {
 		partition1.clear();
 		partition2.clear();
@@ -203,6 +215,8 @@ MapperSim::allocateNeurons(const nemo::Network& network, vector<unsigned>& parti
 		for (i = ncount/2; i < ncount; ++i) partition2.push_back(partition[i]);
 	}
 	partition.clear();
+
+	// Step 5 = Recursive call for the next partition - on both sides
 	allocateNeurons(network, partition1, clusters/2, starting_cluster, partcount*2-1);
 	allocateNeurons(network, partition2, clusters/2 + clusters % 2, starting_cluster + clusters/2, partcount*2-2);
 }

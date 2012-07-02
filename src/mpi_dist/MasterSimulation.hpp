@@ -1,3 +1,5 @@
+/* Copyright 2012 Imperial College London */
+/* Master simulation class - single instance is created per distributed simulation */
 #ifndef MASTER_SIM_HPP
 #define MASTER_SIM_HPP
 #include <nemo/Network.hpp>

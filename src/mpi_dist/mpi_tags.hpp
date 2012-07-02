@@ -1,3 +1,5 @@
+/* Copyright 2012 Imperial College London */
+/* MPI tags that are used for communication - accessible by both Master and Worker simulation classes */
 #ifndef MPI_TAGS_HPP
 #define MPI_TAGS_HPP
 #define MASTER 0

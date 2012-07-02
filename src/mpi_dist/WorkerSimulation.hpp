@@ -1,3 +1,5 @@
+/* Copyright 2012 Imperial College London */
+/* Worker simulation - original NeMo simulation with the MPI layer wrapped around it */
 #ifndef WORKER_SIM_HPP
 #define WORKER_SIM_HPP
 #include "mpi.h"

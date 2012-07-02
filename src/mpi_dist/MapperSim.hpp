@@ -1,5 +1,5 @@
-/* This is a mapper class that would define the clusterization of the network
- */
+/* Copyright 2012 Imperial College London */
+/* This is a mapper class that would define the clusterization of the network */
 #ifndef MAPPER_SIM_HPP
 #define MAPPER_SIM_HPP
 #include <nemo/internal_types.h>

@@ -1,3 +1,5 @@
+/* Copyright 2012 Imperial College London */
+/* Parser class accessible by both Master and Worker simulation classes - now mostly redundant */
 #ifndef PARSER_HPP
 #define PARSER_HPP
 #include <string>

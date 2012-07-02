@@ -10,7 +10,9 @@ Once done, you can run the MPI version via mpirun:
 where L is a number of processes and F is (optional) machinefile with the machines for the distributed version to run.
 Or alternatively through benchmark:
 
-	1) move contents of benchmark folder into the build/src/examples
+	1) move contents of ./check folder into the build/src/examples
 	2) sh PREFERRED_BENCHMARK.sh
 
 which writes output to the corresponding folder.
+
+All the code for distributed version is in the mpi_dist directory.
